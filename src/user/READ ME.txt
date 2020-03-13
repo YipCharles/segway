@@ -1,0 +1,2 @@
+1. applications.cpp
+正常来说只能放任务运行调度等，具体任务实现应该在各个子模块中。这里segway的情况很简单，所以直接放applications.cpp里面了

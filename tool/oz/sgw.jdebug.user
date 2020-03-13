@@ -1,0 +1,19 @@
+
+GraphedExpression="sgw_status.imu.euler_angle[0]"
+GraphedExpression="sgw_status.imu.euler_angle[1]"
+OpenDocument="main.c", FilePath="C:/Users/Charles/OneDrive/Charles/ing/Segway/software/cube/Core/Src/main.c", Line=0
+OpenToolbar="Debug", Floating=0, x=0, y=0
+OpenWindow="Call Stack", DockArea=LEFT, x=0, y=0, w=453, h=935, FilterBarShown=0, ToolBarShown=0
+OpenWindow="Source Files", DockArea=LEFT, x=0, y=0, w=453, h=935, FilterBarShown=1, ToolBarShown=0
+OpenWindow="Disassembly", DockArea=LEFT, x=0, y=0, w=453, h=935, FilterBarShown=0, ToolBarShown=0, ExecCountersShown=0, InstEncodingsShown=0
+OpenWindow="Source", x=0, y=0, w=0, h=0, FilterBarShown=0, ToolBarShown=0, ExecCountersShown=0
+OpenWindow="Watched Data", DockArea=LEFT, x=0, y=0, w=453, h=935, FilterBarShown=0, ToolBarShown=0
+OpenWindow="Data Graph", DockArea=RIGHT, x=0, y=0, w=979, h=951, FilterBarShown=0, ToolBarShown=0, VisibleTab=2, SamplingFreq=0 Hz, ClearEvent=NEVER, LegendShown=1, UniformSampleSpacing=0, PinCursor=10, TimePerDiv=10000000
+TableHeader="Watched Data", SortCol="Expression", SortOrder="ASCENDING", VisibleCols=["Expression";"Value";"Size";"Refresh";"Type"], ColWidths=[185;140;31;50;147]
+TableHeader="Call Stack", SortCol="Function", SortOrder="ASCENDING", VisibleCols=["Function";"Source";"Stack Used"], ColWidths=[228;134;91]
+TableHeader="Source Files", SortCol="File", SortOrder="ASCENDING", VisibleCols=["File";"Status";"Size";"#Insts";"Path"], ColWidths=[224;56;44;57;812]
+TableHeader="Data Graph", SortCol="Index", SortOrder="ASCENDING", VisibleCols=["Index";"Time                    ";" sgw_status.imu.euler_angle[0]";" sgw_status.imu.euler_angle[1]"], ColWidths=[188;49;35;35]
+TableHeader="Data Graph", SortCol="Expression", SortOrder="ASCENDING", VisibleCols=["Expression";"Type";"Value";"Min";"Max";"Average";"# Changes";"Min. Change";"Max. Change"], ColWidths=[188;49;70;70;63;66;78;85;89]
+TableHeader="Power Graph", SortCol="Index", SortOrder="ASCENDING", VisibleCols=["Index";"Time";"Channel 0"], ColWidths=[72;102;108]
+TableHeader="RegisterSelectionDialog", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Auto";"Name";"Address";"Description"], ColWidths=[27;27;27;31]
+WatchedExpression="sgw_status", RefreshRate=2
