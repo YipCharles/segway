@@ -84,12 +84,12 @@ void periperal_task(void *argument)
 	{
 		mpu.read(&sensor);
 
-			mavlink_msg_raw_imu_send(MAVLINK_COMM_0, (uint64_t)tick_abs * 1000,
-									 sensor.accel[0], sensor.accel[1], sensor.accel[2],
-									 sensor.gyro[0], sensor.gyro[1], sensor.gyro[2],
-									 sensor.magnet[0], sensor.magnet[1], sensor.magnet[2],
-									 0,
-									 sensor.temp);
+		mavlink_msg_raw_imu_send(MAVLINK_COMM_0, (uint64_t)tick_abs * 1000,
+								 sensor.accel[0], sensor.accel[1], sensor.accel[2],
+								 sensor.gyro[0], sensor.gyro[1], sensor.gyro[2],
+								 sensor.magnet[0], sensor.magnet[1], sensor.magnet[2],
+								 0,
+								 sensor.temp);
 
 		imu.handle(&sensor);
 

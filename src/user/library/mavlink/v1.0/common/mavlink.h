@@ -31,6 +31,7 @@
 #define MAVLINK_USE_CONVENIENCE_FUNCTIONS
 #define MAVLINK_SEND_UART_BYTES mavlink_send_bytes
 #define MAVLINK_END_UART_SEND mavlink_send_cb
+
 #undef MAVLINK_CRC_EXTRA
 #define MAVLINK_CRC_EXTRA 1
 
