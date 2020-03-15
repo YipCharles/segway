@@ -1,0 +1,19 @@
+
+GraphedExpression="s"
+GraphedExpression="s_lp"
+GraphedExpression="s_lp_2"
+OpenDocument="main.c", FilePath="D:/Charles/Geek/Project/Segway/Software/segway/src/cube/Core/Src/main.c", Line=62
+OpenToolbar="Debug", Floating=0, x=0, y=0
+OpenWindow="Source Files", DockArea=LEFT, x=0, y=0, w=826, h=679, FilterBarShown=1, ToolBarShown=0
+OpenWindow="Source", x=0, y=0, w=0, h=0, FilterBarShown=0, ToolBarShown=0, ExecCountersShown=0
+OpenWindow="Watched Data", DockArea=LEFT, x=0, y=0, w=547, h=322, FilterBarShown=0, ToolBarShown=0
+OpenWindow="Call Graph", DockArea=LEFT, x=0, y=0, w=547, h=322, FilterBarShown=1, ToolBarShown=0
+OpenWindow="Data Graph", DockArea=BOTTOM, x=0, y=0, w=2560, h=615, FilterBarShown=0, ToolBarShown=0, VisibleTab=2, SamplingFreq=1 kHz, ClearEvent=NEVER, LegendShown=1, UniformSampleSpacing=0, PinCursor=-1, TimePerDiv=10000
+TableHeader="Source Files", SortCol="File", SortOrder="ASCENDING", VisibleCols=["File";"Status";"Size";"#Insts";"Path"], ColWidths=[246;62;49;57;518]
+TableHeader="Task List", SortCol="None", SortOrder="ASCENDING", VisibleCols=["Name";"Run Count";"Priority";"Status";"Timeout";"Stack Info (Free / Size)";"ID";"Mutex Count";"Notified Value";"Notify State"], ColWidths=[110;110;110;110;110;110;110;110;110;110]
+TableHeader="Watched Data", SortCol="Expression", SortOrder="ASCENDING", VisibleCols=["Expression";"Value";"Location";"Refresh";"Access"], ColWidths=[64;37;52;50;670]
+TableHeader="Call Graph", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Name";"Stack Total";"Stack Local";"Code Total";"Code Local";"Depth";"Called From"], ColWidths=[264;77;78;76;77;63;221]
+TableHeader="Power Graph", SortCol="Index", SortOrder="ASCENDING", VisibleCols=["Index";"Time";"Channel 0"], ColWidths=[72;102;108]
+TableHeader="RegisterSelectionDialog", SortCol="Name", SortOrder="ASCENDING", VisibleCols=["Auto";"Name";"Address";"Description"], ColWidths=[26;26;26;31]
+TableHeader="Data Graph", SortCol="None", SortOrder="ASCENDING", VisibleCols=["Index";"Time                    ";" s";" s_lp";" s_lp_2"], ColWidths=[77;49;92;85;71]
+TableHeader="Data Graph", SortCol="Expression", SortOrder="ASCENDING", VisibleCols=["Expression";"Type";"Value";"Min";"Max";"Average";"# Changes";"Min. Change";"Max. Change"], ColWidths=[77;49;77;77;70;84;78;85;1963]

@@ -59,16 +59,16 @@ void startup_task(void *argument)
 	xTaskCreate(battery_task, "Battery", 128, NULL, RTOS_PRIORITY_NORMAL, NULL);
 	xTaskCreate(periperal_task, "Periperal", 256, NULL, RTOS_PRIORITY_NORMAL, NULL);
 #ifdef DEBUG
-	xTaskCreate(test_task, "Test", 1024, NULL, RTOS_PRIORITY_HIGH, NULL);
+	xTaskCreate(test_task, "Test", 1024, NULL, RTOS_PRIORITY_LOWEST, NULL);
 	xTaskCreate(monitor_task, "Monitor", 256, NULL, RTOS_PRIORITY_NORMAL, NULL);
 #endif
 
 	vTaskDelete(handle_startup);
 }
 
+	float s, s_lp, s_lp_2;
 void test_task(void *argument)
 {
-	float s, s_lp, s_lp_2;
 	float i = 0;
 	TickType_t tick_abs;
 
@@ -77,16 +77,20 @@ void test_task(void *argument)
 	LowPassFilterFloat lpf;
 	LowPassFilter2pFloat lpf2;
 	
-	lpf.set_cutoff_frequency(1000, 50);
-	lpf2.set_cutoff_frequency(1000, 50);
+	lpf.set_cutoff_frequency(1000, 1);
+	lpf2.set_cutoff_frequency(1000, 10);
 	
 	for (;;)
 	{
 		s = sinf(i);
+		if (s > 0)
+			s=1;
+		else
+			s=-1;
 		s_lp = lpf.apply(s);
 		s_lp_2 = lpf2.apply(s);
 
-		i+=0.01f;
+		i+=0.1f;
 		vTaskDelayUntil(&tick_abs, 1);
 	}
 }
