@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <math.h>
+#include <float.h>
 #include <arm_math.h>
 
 #define ONE_BY_SQRT3			(0.57735026919f)
@@ -35,5 +36,4 @@
     #define M_SQRT2    1.41421356237309504880f   // sqrt(2)
     #define M_SQRT1_2  0.707106781186547524401f  // 1/sqrt(2)
 #endif
-
 

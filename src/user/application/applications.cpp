@@ -3,14 +3,16 @@
 #include "oled.h"
 #include "imu.h"
 #include "mavlink.h"
+#include "datatypes.h"
+#include "LowPassFilter.h"
+#include "LowPassFilter2p.h"
 
 static TaskHandle_t handle_startup;
 mavlink_system_t mavlink_system;
 static uint8_t mavlink_send_buffer[256];
 static uint32_t mavlink_send_pos = 0;
-static DEV_usb *mavlink = &usb;
-// static DEV_usb *shell = &usb;
-static DEV_uart *shell = &serial_1;
+static DEV_uart *mavlink = &serial_1;
+static DEV_usb *shell = &usb;
 IMU_driver imu;
 
 extern "C"
@@ -57,7 +59,7 @@ void startup_task(void *argument)
 	xTaskCreate(battery_task, "Battery", 128, NULL, RTOS_PRIORITY_NORMAL, NULL);
 	xTaskCreate(periperal_task, "Periperal", 256, NULL, RTOS_PRIORITY_NORMAL, NULL);
 #ifdef DEBUG
-	xTaskCreate(test_task, "Test", 1024, NULL, RTOS_PRIORITY_NORMAL, NULL);
+	xTaskCreate(test_task, "Test", 1024, NULL, RTOS_PRIORITY_HIGH, NULL);
 	xTaskCreate(monitor_task, "Monitor", 256, NULL, RTOS_PRIORITY_NORMAL, NULL);
 #endif
 
@@ -66,10 +68,26 @@ void startup_task(void *argument)
 
 void test_task(void *argument)
 {
+	float s, s_lp, s_lp_2;
+	float i = 0;
+	TickType_t tick_abs;
 
+	tick_abs = xTaskGetTickCount();
+	
+	LowPassFilterFloat lpf;
+	LowPassFilter2pFloat lpf2;
+	
+	lpf.set_cutoff_frequency(1000, 50);
+	lpf2.set_cutoff_frequency(1000, 50);
+	
 	for (;;)
 	{
-		vTaskDelay(100);
+		s = sinf(i);
+		s_lp = lpf.apply(s);
+		s_lp_2 = lpf2.apply(s);
+
+		i+=0.01f;
+		vTaskDelayUntil(&tick_abs, 1);
 	}
 }
 
@@ -179,8 +197,8 @@ void oled_task(void *argument)
 {
 	for (;;)
 	{
-		oled_handle();
-		// vTaskDelay(1);
+		//oled_handle();
+		vTaskDelay(1);
 	}
 }
 
@@ -243,7 +261,8 @@ void mavlink_send_cb(mavlink_channel_t chan, uint32_t len)
 	{
 		if (mavlink_send_pos == len)
 		{
-			mavlink->write((uint8_t *)mavlink_send_buffer, len);
+			if (mavlink != NULL)
+				mavlink->write((uint8_t *)mavlink_send_buffer, len);
 			mavlink_send_pos = 0;
 		}
 	}

@@ -16,8 +16,8 @@
         <TargetCommonOption>
           <Device>STM32F401CEUx</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32F4xx_DFP.2.13.0</PackID>
-          <PackURL>http://www.keil.com/pack</PackURL>
+          <PackID>Keil.STM32F4xx_DFP.2.14.0</PackID>
+          <PackURL>http://www.keil.com/pack/</PackURL>
           <Cpu>IRAM(0x20000000-0x20017FFF) IROM(0x8000000-0x807FFFF) CLOCK(25000000) FPU2 CPUTYPE("Cortex-M4")</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
           <StartupFile></StartupFile>
@@ -188,7 +188,7 @@
             <hadIRAM2>0</hadIRAM2>
             <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
-            <useUlib>1</useUlib>
+            <useUlib>0</useUlib>
             <EndSel>0</EndSel>
             <uLtcg>0</uLtcg>
             <nSecure>0</nSecure>
@@ -655,6 +655,31 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>misc</GroupName>
+          <Files>
+            <File>
+              <FileName>LowPassFilter.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\user\library\misc\LowPassFilter.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>LowPassFilter2p.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\user\library\misc\LowPassFilter2p.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>math_common.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\user\library\misc\math_common.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>math_common.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\user\library\misc\math_common.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>driver</GroupName>
           <Files>
             <File>
@@ -764,8 +789,8 @@
         <TargetCommonOption>
           <Device>STM32F401CEUx</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32F4xx_DFP.2.13.0</PackID>
-          <PackURL>http://www.keil.com/pack</PackURL>
+          <PackID>Keil.STM32F4xx_DFP.2.14.0</PackID>
+          <PackURL>http://www.keil.com/pack/</PackURL>
           <Cpu>IRAM(0x20000000-0x20017FFF) IROM(0x8000000-0x807FFFF) CLOCK(25000000) FPU2 CPUTYPE("Cortex-M4")</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
           <StartupFile></StartupFile>
@@ -1086,7 +1111,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F401xE DEBUG</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../USB_DEVICE/App;../USB_DEVICE/Target;../Drivers/STM32F4xx_HAL_Driver/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;../Middlewares/ST/STM32_USB_Device_Library/Core/Inc;../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc;../Drivers/CMSIS/Device/ST/STM32F4xx/Include;../Drivers/CMSIS/Include;..\..\user\library\freertos\portable\GCC\ARM_CM4F;..\..\user\library\freertos\include;..\..\user\driver;..\..\user\driver\hal;..\..\user\application;..\..\user;..\..\user\application\imu;..\..\user\library\mavlink\v1.0\common;..\..\user\library\mavlink\v1.0</IncludePath>
+              <IncludePath>../Core/Inc;../USB_DEVICE/App;../USB_DEVICE/Target;../Drivers/STM32F4xx_HAL_Driver/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;../Middlewares/ST/STM32_USB_Device_Library/Core/Inc;../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc;../Drivers/CMSIS/Device/ST/STM32F4xx/Include;../Drivers/CMSIS/Include;..\..\user\library\freertos\portable\GCC\ARM_CM4F;..\..\user\library\freertos\include;..\..\user\driver;..\..\user\driver\hal;..\..\user\application;..\..\user;..\..\user\application\imu;..\..\user\library\mavlink\v1.0\common;..\..\user\library\mavlink\v1.0;..\..\user\library\misc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -1399,6 +1424,31 @@
               <FileName>imu.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\user\application\imu\imu.cpp</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>misc</GroupName>
+          <Files>
+            <File>
+              <FileName>LowPassFilter.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\user\library\misc\LowPassFilter.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>LowPassFilter2p.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\user\library\misc\LowPassFilter2p.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>math_common.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\user\library\misc\math_common.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>math_common.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\user\library\misc\math_common.h</FilePath>
             </File>
           </Files>
         </Group>
