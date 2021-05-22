@@ -1,12 +1,13 @@
 #pragma once
 
 #include "datatypes.h"
-#include "platform.h"
 #include "imu.h"
+#include "platform.h"
 
 class MPU9250
 {
 private:
+	SPI_HandleTypeDef *spi;
 	GPIO_TypeDef *port;
 	uint16_t pin;
 
@@ -19,7 +20,8 @@ private:
 
 	bool ready;
 public:
-	MPU9250();
-	void init(GPIO_TypeDef *po, uint16_t pi);
+	MPU9250(SPI_HandleTypeDef *hspi, GPIO_TypeDef *hport, uint16_t hpin);
+	bool init();
 	void read(mpu_t *sensor);
+	// void read_request(mpu_t *sensor);
 };

@@ -32,7 +32,7 @@ extern Sonic sonic;
 extern LED led_red;
 //extern Oled oled;
 extern Motor motor_1, motor_2;
-extern MPU9250 mpu;
+//extern MPU9250 mpu;
 extern DEV_usb usb;
 
 extern "C"

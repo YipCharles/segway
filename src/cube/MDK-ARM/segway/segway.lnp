@@ -1,4 +1,4 @@
---cpu=Cortex-M4.fp
+--cpu=Cortex-M4.fp.sp
 "segway\startup_stm32f401xe.o"
 "segway\main.o"
 "segway\gpio.o"
@@ -33,6 +33,7 @@
 "segway\stm32f4xx_hal_exti.o"
 "segway\stm32f4xx_hal_adc.o"
 "segway\stm32f4xx_hal_adc_ex.o"
+"segway\stm32f4xx_ll_adc.o"
 "segway\stm32f4xx_hal_i2c.o"
 "segway\stm32f4xx_hal_i2c_ex.o"
 "segway\stm32f4xx_hal_spi.o"
@@ -46,6 +47,7 @@
 "segway\usbd_cdc.o"
 "segway\applications.o"
 "segway\imu.o"
+"segway\interrupt.o"
 "segway\lowpassfilter.o"
 "segway\lowpassfilter2p.o"
 "segway\math_common.o"
@@ -66,7 +68,7 @@
 "segway\timers.o"
 "segway\heap_4.o"
 "segway\port.o"
-"C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.5.1\CMSIS\DSP\Lib\ARM\arm_cortexM4lf_math.lib"
+"C:\Users\Charles\AppData\Local\Arm\Packs\ARM\CMSIS\5.6.0\CMSIS\DSP\Lib\ARM\arm_cortexM4lf_math.lib"
 --strict --scatter "segway\segway.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

@@ -1,5 +1,3 @@
-#include "platform.h"
-#include "datatypes.h"
 #include "mpu9250.h"
 
 #define SELF_TEST_X_GYRO 0x0
@@ -69,7 +67,7 @@
 #define ZA_OFFSET_L 0x7E
 
 #define CLEAR_BUFFER(__B) memset(__B, 0, sizeof(__B))
-
+#define DELAY HAL_Delay
 
 
 void MPU9250::cs(bool en)
@@ -84,7 +82,7 @@ inline uint8_t MPU9250::spi_read_write_byte(uint8_t data)
 {
 	uint8_t tx = data, rx;
 
-	HAL_SPI_TransmitReceive(&hspi1, &tx, &rx, 1, 1);
+	HAL_SPI_TransmitReceive(spi, &tx, &rx, 1, 1);
 	return rx;
 }
 
@@ -120,20 +118,18 @@ void MPU9250::reg_write(uint8_t addr, uint8_t *buffer, uint32_t size)
 	cs(false);
 }
 
-
-
-
-MPU9250::MPU9250()
+MPU9250::MPU9250(SPI_HandleTypeDef *hspi, GPIO_TypeDef *hport, uint16_t hpin)
 {
+	spi = hspi;
+	port = hport;
+	pin = hpin;
+
 	ready = false;
 }
 
-void MPU9250::init(GPIO_TypeDef *po, uint16_t pi)
+bool MPU9250::init()
 {
 	uint8_t buffer[10];
-
-	port = po;
-	pin = pi;
 
 	cs(false);
 	CLEAR_BUFFER(buffer);
@@ -143,46 +139,48 @@ void MPU9250::init(GPIO_TypeDef *po, uint16_t pi)
 		reg_read(WHO_AM_I, buffer, 1);
 		if (buffer[0] == 0x71)
 			break;
-		vTaskDelay(100);
+		DELAY(100);
 	}
 
 	CLEAR_BUFFER(buffer);
 	buffer[0] = 0x80;
 	reg_write(PWR_MGMT_1, buffer, 1);
-	vTaskDelay(50);
+	DELAY(50);
 
 	// gyro z clock as main clock
 	CLEAR_BUFFER(buffer);
 	buffer[0] = 0x03;
 	reg_write(PWR_MGMT_1, buffer, 1);
-	vTaskDelay(1);
+	DELAY(1);
 
 	// SAMPLE_RATE = 1Khz / (1 + SMPLRT_DIV)
 	CLEAR_BUFFER(buffer);
 	buffer[0] = 0x00;
 	reg_write(SMPLRT_DIV, buffer, 1);
-	vTaskDelay(1);
+	DELAY(1);
 
 	// TODO
 	CLEAR_BUFFER(buffer);
 	buffer[0] = 0x00;
 	reg_write(CONFIG, buffer, 1);
-	vTaskDelay(1);
+	DELAY(1);
 
 	// acc scale: 8G
 	CLEAR_BUFFER(buffer);
 	buffer[0] = 0x10;
 	reg_write(ACCEL_CONFIG, buffer, 1);
-	vTaskDelay(1);
+	DELAY(1);
 
 	// gyro scale: 500dps
 	// DLPF: 0 (gyro sample rate: 8Khz)
 	CLEAR_BUFFER(buffer);
 	buffer[0] = 0x08;
 	reg_write(GYRO_CONFIG, buffer, 1);
-	vTaskDelay(1);
+	DELAY(1);
 
 	ready = true;
+	
+	return true;
 }
 
 void MPU9250::read(mpu_t *sensor)
@@ -207,3 +205,8 @@ void MPU9250::read(mpu_t *sensor)
 //	sensor->magnet[1] = (int16_t)buffer[2] << 8 | buffer[3];
 //	sensor->magnet[2] = (int16_t)buffer[4] << 8 | buffer[5];
 }
+
+//void MPU9250::read_request(mpu_t *sensor)
+//{
+
+//}

@@ -164,7 +164,6 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-
 /* USER CODE END 4 */
 
  /**
@@ -175,18 +174,18 @@ void SystemClock_Config(void)
   * @param  htim : TIM handle
   * @retval None
   */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-  /* USER CODE BEGIN Callback 0 */
+//void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+//{
+//  /* USER CODE BEGIN Callback 0 */
 
-  /* USER CODE END Callback 0 */
-  if (htim->Instance == TIM10) {
-    HAL_IncTick();
-  }
-  /* USER CODE BEGIN Callback 1 */
+//  /* USER CODE END Callback 0 */
+//  if (htim->Instance == TIM10) {
+//    HAL_IncTick();
+//  }
+//  /* USER CODE BEGIN Callback 1 */
 
-  /* USER CODE END Callback 1 */
-}
+//  /* USER CODE END Callback 1 */
+//}
 
 /**
   * @brief  This function is executed in case of error occurrence.
@@ -196,7 +195,8 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-
+  while (1)
+	  ;
   /* USER CODE END Error_Handler_Debug */
 }
 

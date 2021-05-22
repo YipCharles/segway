@@ -13,7 +13,7 @@ static uint8_t mavlink_send_buffer[256];
 static uint32_t mavlink_send_pos = 0;
 static DEV_uart *mavlink = &serial_1;
 static DEV_usb *shell = &usb;
-IMU_driver imu;
+IMU imu;
 
 extern "C"
 {
@@ -104,8 +104,6 @@ void periperal_task(void *argument)
 
 	for (;;)
 	{
-		mpu.read(&sensor);
-
 		mavlink_msg_raw_imu_send(MAVLINK_COMM_0, (uint64_t)tick_abs * 1000,
 								 sensor.accel[0], sensor.accel[1], sensor.accel[2],
 								 sensor.gyro[0], sensor.gyro[1], sensor.gyro[2],
@@ -113,7 +111,6 @@ void periperal_task(void *argument)
 								 0,
 								 sensor.temp);
 
-		imu.handle(&sensor);
 
 		// led_red.handle();
 
@@ -129,7 +126,7 @@ void imu_task(void *argument)
 
 	for (;;)
 	{
-		//imu.attitude_handle();
+		//imu.handle();
 
 		vTaskDelayUntil(&tick_abs, 5);
 	}
@@ -151,7 +148,6 @@ void control_task(void *argument)
 
 	for (;;)
 	{
-		if (imu.mode == IMU_MODE_RUN)
 		{
 			//imu.read(&sensor, euler_angle);
 
