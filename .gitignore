@@ -16,6 +16,7 @@
 *.inp
 *.htm
 *.json
+JLinkLog.txt
 
 # Object files
 *.o
