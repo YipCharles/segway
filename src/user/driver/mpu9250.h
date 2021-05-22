@@ -20,8 +20,11 @@ private:
 
 	bool ready;
 public:
-	MPU9250(SPI_HandleTypeDef *hspi, GPIO_TypeDef *hport, uint16_t hpin);
-	bool init();
-	void read(mpu_t *sensor);
+	MPU9250();
+
+	bool init(SPI_HandleTypeDef *hspi, GPIO_TypeDef *hport, uint16_t hpin);
+	bool read(mpu_t *sensor);
 	// void read_request(mpu_t *sensor);
+
+	bool isready(void);
 };

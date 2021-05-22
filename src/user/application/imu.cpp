@@ -1,20 +1,11 @@
 #include "imu.h"
 #include "FreeRTOS.h"
 #include "queue.h"
+#include "mpu9250.h"
 
 IMU::IMU()
 {
-	ready = false;
-}
-
-IMU::IMU(bool (*hinit)(void),
-		 bool (*hread)(mpu_t *sensor),
-		 void (*hread_request)(void))
-{
-	sensor_init = hinit;
-	sensor_read = hread;
-	sensor_read_request = hread_request;
-
+	// sensor_read = sensor_readIT = NULL;
 	ready = false;
 }
 
@@ -22,13 +13,21 @@ IMU::IMU(bool (*hinit)(void),
 //{
 //	// sensor_init = &mpu.init;
 //	// sensor_read = &mpu.read;
-//	// sensor_read_request = mpu.request;
+//	// sensor_readIT = mpu.request;
 
 //	ready = false;
 //}
 
-bool IMU::init(imu_sensor_conf_t *addr)
+extern MPU9250 mpu;
+
+bool IMU::init(void)
 {
+	// sensor_read = mpu.read;
+	// sensor_readIT = readIT;
+	// sensor_read = mpu.read;
+
+	exist = mpu.isready();
+
 	// memcpy(&conf, addr, sizeof(imu_sensor_conf_t));
 
 	conf.gyro_scale[0] = 500.0 / 32767 * 1.0f;
@@ -56,12 +55,12 @@ void IMU::sample(void)
 
 	mpu_t item;
 
-	if (sensor_read(&item))
+	if (mpu.read(&item))
 		xQueueSendFromISR(imu_sample_queue, &item, NULL);
 
 	// read_request can be NULL
-	if (sensor_read_request)
-		sensor_read_request();
+	if (sensor_readIT)
+		sensor_readIT();
 }
 
 bool IMU::handle(void)

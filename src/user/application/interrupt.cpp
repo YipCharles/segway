@@ -10,7 +10,6 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 
 extern "C"
 {
-
 	void usb_read_cb(uint8_t *buffer, uint32_t size)
 	{
 		usb.read_cb(buffer, size);

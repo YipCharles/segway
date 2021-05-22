@@ -118,18 +118,18 @@ void MPU9250::reg_write(uint8_t addr, uint8_t *buffer, uint32_t size)
 	cs(false);
 }
 
-MPU9250::MPU9250(SPI_HandleTypeDef *hspi, GPIO_TypeDef *hport, uint16_t hpin)
+MPU9250::MPU9250()
 {
-	spi = hspi;
-	port = hport;
-	pin = hpin;
-
 	ready = false;
 }
 
-bool MPU9250::init()
+bool MPU9250::init(SPI_HandleTypeDef *hspi, GPIO_TypeDef *hport, uint16_t hpin)
 {
 	uint8_t buffer[10];
+
+	spi = hspi;
+	port = hport;
+	pin = hpin;
 
 	cs(false);
 	CLEAR_BUFFER(buffer);
@@ -183,10 +183,10 @@ bool MPU9250::init()
 	return true;
 }
 
-void MPU9250::read(mpu_t *sensor)
+bool MPU9250::read(mpu_t *sensor)
 {
 	if (!ready)
-		return;
+		return false;
 
 	uint8_t buffer[14];
 	
@@ -204,9 +204,16 @@ void MPU9250::read(mpu_t *sensor)
 //	sensor->magnet[0] = (int16_t)buffer[0] << 8 | buffer[1];
 //	sensor->magnet[1] = (int16_t)buffer[2] << 8 | buffer[3];
 //	sensor->magnet[2] = (int16_t)buffer[4] << 8 | buffer[5];
+
+	return true;
 }
 
 //void MPU9250::read_request(mpu_t *sensor)
 //{
 
 //}
+
+bool MPU9250::isready(void)
+{
+	return ready;
+}

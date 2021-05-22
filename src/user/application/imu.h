@@ -20,6 +20,9 @@ typedef struct
 	int16_t magnet[3];
 } mpu_t;
 
+typedef bool (*read_func_t)(mpu_t *sensor);
+typedef void (*readIT_func_t)(void);
+
 typedef struct
 {
 	int32_t gyro[3];
@@ -65,9 +68,8 @@ private:
 
 	float noise_sq[3];
 
-	bool (*sensor_init)(void);
-	bool (*sensor_read)(mpu_t *sensor);
-	void (*sensor_read_request)(void);
+	read_func_t sensor_read;
+	readIT_func_t sensor_readIT;
 
 	// from sensor, assemble fix
 	int16_t gyro_raw[3];
@@ -107,14 +109,12 @@ private:
 
 public:
 	IMU();
-	IMU(bool (*hinit)(void),
-		bool (*hread)(mpu_t *sensor),
-		void (*hread_request)(void));
-	
-	// TODO: not good
-	//IMU(MPU9250 &);
 
+	bool init(void);
 	bool init(imu_sensor_conf_t *addr);
+	bool init(imu_sensor_conf_t *addr,
+			  read_func_t read,
+			  readIT_func_t readIT);
 	bool is_ready(void);
 	void sample(void);
 	bool handle(void);

@@ -8,7 +8,7 @@ DEV_usb usb;
 // devices (refer from hal)
 Sonic sonic;
 Motor motor_1, motor_2;
-MPU9250 mpu(&hspi1, SPI1_CS_1_GPIO_Port, SPI1_CS_1_Pin);
+MPU9250 mpu;
 LED led_red;
 // Oled oled;
 
@@ -22,7 +22,7 @@ void platform_init(void)
 
 	usb.init(512);
 
-	mpu.init();
+	mpu.init(&hspi1, SPI1_CS_1_GPIO_Port, SPI1_CS_1_Pin);
 
 	sonic.init(serial_2);
 

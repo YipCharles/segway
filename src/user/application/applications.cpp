@@ -14,6 +14,7 @@ static uint32_t mavlink_send_pos = 0;
 static DEV_uart *mavlink = &serial_1;
 static DEV_usb *shell = &usb;
 IMU imu;
+extern MPU9250 mpu;
 
 extern "C"
 {
@@ -120,15 +121,11 @@ void periperal_task(void *argument)
 
 void imu_task(void *argument)
 {
-	TickType_t tick_abs;
-
-	tick_abs = xTaskGetTickCount();
+	imu.init();
 
 	for (;;)
 	{
-		//imu.handle();
-
-		vTaskDelayUntil(&tick_abs, 5);
+		imu.handle();
 	}
 }
 
