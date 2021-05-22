@@ -15,6 +15,7 @@
 *.dep
 *.inp
 *.htm
+*.json
 
 # Object files
 *.o
