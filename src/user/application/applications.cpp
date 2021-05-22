@@ -6,6 +6,8 @@
 #include "datatypes.h"
 #include "LowPassFilter.h"
 #include "LowPassFilter2p.h"
+#include "eigen\Eigen\Dense"
+using namespace Eigen;
 
 static TaskHandle_t handle_startup;
 mavlink_system_t mavlink_system;
@@ -33,6 +35,11 @@ void mavlink_proc(mavlink_message_t &msg);
 
 void user_loop(void)
 {
+	Matrix3f a;
+	Vector3f v;
+    a << 1, 2, 3, 4, 5, 6, 7, 8, 9;
+	a.transpose();
+	
 	xTaskCreate(startup_task, "Startup", 256, NULL, RTOS_PRIORITY_HIGH, &handle_startup);
 	vTaskStartScheduler();
 	while (1)
