@@ -11,14 +11,14 @@ Motor motor_1, motor_2;
 MPU9250 mpu;
 LED led_red;
 // Oled oled;
-extern uint8_t *usb_init_malloc;
 
 void platform_init(void)
 {
 	// hal
 	HAL_TIM_Base_Start(&htim2);
 
-	usb_init_malloc = (uint8_t *)pvPortMalloc(sizeof(USBD_CDC_HandleTypeDef));
+	// st already fix this bug
+	// usb_init_malloc = (uint8_t *)pvPortMalloc(sizeof(USBD_CDC_HandleTypeDef));
 
 	serial_1.init(huart1, 512);
 
