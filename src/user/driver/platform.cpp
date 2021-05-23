@@ -9,7 +9,7 @@ DEV_usb usb;
 Sonic sonic;
 Motor motor_1, motor_2;
 MPU9250 mpu;
-LED led_red;
+// LED led_red;
 // Oled oled;
 
 void platform_init(void)

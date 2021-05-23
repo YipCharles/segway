@@ -74,10 +74,12 @@ void Error_Handler(void);
 #define SPI1_CS_1_GPIO_Port GPIOB
 #define SPI1_CS_2_Pin GPIO_PIN_1
 #define SPI1_CS_2_GPIO_Port GPIOB
-#define LED_GREEN_Pin GPIO_PIN_13
-#define LED_GREEN_GPIO_Port GPIOB
-#define LED_RED_Pin GPIO_PIN_14
-#define LED_RED_GPIO_Port GPIOB
+#define ENC_A_Pin GPIO_PIN_13
+#define ENC_A_GPIO_Port GPIOB
+#define ENC_A_EXTI_IRQn EXTI15_10_IRQn
+#define ENC_B_Pin GPIO_PIN_14
+#define ENC_B_GPIO_Port GPIOB
+#define ENC_B_EXTI_IRQn EXTI15_10_IRQn
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

@@ -95,7 +95,6 @@ int main(void)
   MX_GPIO_Init();
   MX_ADC1_Init();
   MX_SPI1_Init();
-  MX_TIM1_Init();
   MX_I2C1_Init();
   MX_TIM3_Init();
   MX_USART1_UART_Init();
@@ -174,18 +173,18 @@ void SystemClock_Config(void)
   * @param  htim : TIM handle
   * @retval None
   */
-//void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-//{
-//  /* USER CODE BEGIN Callback 0 */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /* USER CODE BEGIN Callback 0 */
 
-//  /* USER CODE END Callback 0 */
-//  if (htim->Instance == TIM10) {
-//    HAL_IncTick();
-//  }
-//  /* USER CODE BEGIN Callback 1 */
+  /* USER CODE END Callback 0 */
+  if (htim->Instance == TIM10) {
+    HAL_IncTick();
+  }
+  /* USER CODE BEGIN Callback 1 */
 
-//  /* USER CODE END Callback 1 */
-//}
+  /* USER CODE END Callback 1 */
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.
