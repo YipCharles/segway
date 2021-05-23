@@ -153,29 +153,40 @@ bool MPU9250::init(SPI_HandleTypeDef *hspi, GPIO_TypeDef *hport, uint16_t hpin)
 	reg_write(PWR_MGMT_1, buffer, 1);
 	DELAY(1);
 
-	// SAMPLE_RATE = 1Khz / (1 + SMPLRT_DIV)
+	// SAMPLE_RATE = 8Khz
 	CLEAR_BUFFER(buffer);
 	buffer[0] = 0x00;
 	reg_write(SMPLRT_DIV, buffer, 1);
 	DELAY(1);
 
-	// TODO
+	// SAMPLE_RATE = 8Khz, 3600Hz bandwidth, 0.17ms delay
+	// CLEAR_BUFFER(buffer);
+	// buffer[0] = 0x07;
+	// reg_write(CONFIG, buffer, 1);
+	// DELAY(1);
+	// SAMPLE_RATE = 8Khz, 250Hz bandwidth, 0.97ms delay
 	CLEAR_BUFFER(buffer);
 	buffer[0] = 0x00;
 	reg_write(CONFIG, buffer, 1);
 	DELAY(1);
 
-	// acc scale: 8G
+	// gyro scale: 500dps
+	// stupid fchoice: 00B means 11B
 	CLEAR_BUFFER(buffer);
-	buffer[0] = 0x10;
-	reg_write(ACCEL_CONFIG, buffer, 1);
+	buffer[0] = 0x01 << 3;
+	reg_write(GYRO_CONFIG, buffer, 1);
 	DELAY(1);
 
-	// gyro scale: 500dps
-	// DLPF: 0 (gyro sample rate: 8Khz)
+	// acc scale: 4G
 	CLEAR_BUFFER(buffer);
-	buffer[0] = 0x08;
-	reg_write(GYRO_CONFIG, buffer, 1);
+	buffer[0] = 0x01 << 3;
+	reg_write(ACCEL_CONFIG, buffer, 1);
+
+	DELAY(1);
+	// accel: 1kHz 
+	CLEAR_BUFFER(buffer);
+	buffer[0] = 0x00;
+	reg_write(ACCEL_CONFIG_2, buffer, 1);
 	DELAY(1);
 
 	ready = true;
@@ -200,10 +211,10 @@ bool MPU9250::read(mpu_t *sensor)
 	sensor->accel[2] = (int16_t)buffer[4] << 8 | buffer[5];
 	sensor->temp = (int16_t)buffer[6] << 8 | buffer[7];
 
-//	reg_read(MAG_HXL, buffer, 6);
-//	sensor->magnet[0] = (int16_t)buffer[0] << 8 | buffer[1];
-//	sensor->magnet[1] = (int16_t)buffer[2] << 8 | buffer[3];
-//	sensor->magnet[2] = (int16_t)buffer[4] << 8 | buffer[5];
+	reg_read(MAG_HXL, buffer, 6);
+	sensor->magnet[0] = (int16_t)buffer[0] << 8 | buffer[1];
+	sensor->magnet[1] = (int16_t)buffer[2] << 8 | buffer[3];
+	sensor->magnet[2] = (int16_t)buffer[4] << 8 | buffer[5];
 
 	return true;
 }

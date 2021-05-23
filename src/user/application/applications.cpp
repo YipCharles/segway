@@ -53,8 +53,11 @@ void startup_task(void *argument)
 	//	sgw_init();
 
 	// task
-	xTaskCreate(control_task, "Control", 256, NULL, RTOS_PRIORITY_HIGH, NULL);
+	xTaskCreate(gyro_control_task, "gyro ctrl", 256, NULL, RTOS_PRIORITY_HIGH, NULL);
+	xTaskCreate(attitude_control_task, "attitude ctrl", 256, NULL, RTOS_PRIORITY_NORMAL, NULL);
+	
 	xTaskCreate(imu_task, "IMU", 1024, NULL, RTOS_PRIORITY_NORMAL, NULL);
+	
 	xTaskCreate(serial_task, "Serial", 256, NULL, RTOS_PRIORITY_NORMAL, NULL);
 	xTaskCreate(sonic_task, "Sonic", 256, NULL, RTOS_PRIORITY_NORMAL, NULL);
 	xTaskCreate(oled_task, "Oled", 256, NULL, RTOS_PRIORITY_LOWEST, NULL);
@@ -130,7 +133,25 @@ void imu_task(void *argument)
 	}
 }
 
-void control_task(void *argument)
+void gyro_control_task(void *argument)
+{
+	TickType_t tick_abs;
+	imu_sensor_t sensor;
+	float euler_angle[3];
+
+	tick_abs = xTaskGetTickCount();
+
+	for (;;)
+	{
+		imu.gyro[PITCH];
+
+		// pid_regular();
+
+		vTaskDelayUntil(&tick_abs, 1);
+	}
+}
+
+void attitude_control_task(void *argument)
 {
 	// float gyro_angle[3], accel_angle[3];
 	// float torque[3];
@@ -146,12 +167,11 @@ void control_task(void *argument)
 
 	for (;;)
 	{
-		{
-			//imu.read(&sensor, euler_angle);
+		MadgwickAHRS_GetAngle(attitude);
 
-		}
-		
-		vTaskDelayUntil(&tick_abs, 1);
+		// pid_regular();
+
+		vTaskDelayUntil(&tick_abs, 200);
 	}
 	// while (1)
 	// {

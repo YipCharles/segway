@@ -58,6 +58,7 @@ bool IMU::init(void)
 	return false;
 }
 
+// 2kHz
 void IMU::sample(void)
 {
 	if (!exist)
@@ -169,21 +170,24 @@ bool IMU::handle(void)
 				angle[i] += gyro[i] / (float)IMU_SAMPLE_RATE;
 			}
 #endif
-			// atittude estimation
-			// MadgwickAHRS_Update(gyro[0], gyro[1], -gyro[2],
-			// 					accel[0], accel[1], accel[2]);
 
+			// atittude estimation
+			// TODO: better: fast update gyro-only attitude, slow update acc+mag compensate to gyro
+			if (timeout > 200ms)
+			{
+				MadgwickAHRSupdate(gyro[0], gyro[1], gyro[2],
+								   accel[0], accel[1], accel[2],
+								   0, 0, 0);
+			}
+			
 			result = true;
 		}
 	}
 
-	// TODO cant run MadgwickAHRS_Update
-
 	if (0)
 	{
 		// very slow!
-		// MadgwickAHRS_GetAngle(attitude);
-
+		MadgwickAHRS_GetAngle(attitude);
 	}
 
 	return true;
