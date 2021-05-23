@@ -6,6 +6,7 @@
 #include "datatypes.h"
 #include "LowPassFilter.h"
 #include "LowPassFilter2p.h"
+#include "FreeRTOS.h"
 
 static TaskHandle_t handle_startup;
 mavlink_system_t mavlink_system;

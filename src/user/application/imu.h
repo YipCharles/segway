@@ -105,7 +105,7 @@ private:
 	imu_sensor_conf_t conf;
 
 	// rtos
-	QueueHandle_t imu_sample_queue;
+	QueueHandle_t imu_sample_queue = NULL;
 
 public:
 	IMU();

@@ -27,21 +27,31 @@ bool IMU::init(void)
 	// sensor_read = mpu.read;
 
 	exist = mpu.isready();
+	sample_rate = 2000;
 
 	// memcpy(&conf, addr, sizeof(imu_sensor_conf_t));
 
 	conf.gyro_scale[0] = 500.0 / 32767 * 1.0f;
 	conf.gyro_scale[1] = 500.0 / 32767 * 1.0f;
-	conf.gyro_scale[2] = 500.0 / 32767 * 0.9918979753f;
+	conf.gyro_scale[2] = 500.0 / 32767 * 1.0f;
 
 	conf.accel_scale[0] = 2.0 / 32767 * 1.0f;
 	conf.accel_scale[1] = 2.0 / 32767 * 0.99f;
 	conf.accel_scale[2] = 2.0 / 32767 * 1.0f;
 
+	conf.gyro_offset[0] = -31;
+	conf.gyro_offset[1] = 150;
+	conf.gyro_offset[2] = -25;
 	conf.accel_offset[0] = 0;
-	conf.accel_offset[1] = 280;
-	conf.accel_offset[2] = 600;
+	conf.accel_offset[1] = 0;
+	conf.accel_offset[2] = 0;
 	conf.temp_offset = 3000;
+
+	for (uint32_t i = 0; i < 3; i++)
+	{
+		gyro_lpf_handle[i].set_cutoff_frequency(sample_rate, 20);
+		accel_lpf_handle[i].set_cutoff_frequency(sample_rate, 20);
+	}
 
 	imu_sample_queue = xQueueCreate(16, sizeof(mpu_t));
 
@@ -56,7 +66,10 @@ void IMU::sample(void)
 	mpu_t item;
 
 	if (mpu.read(&item))
-		xQueueSendFromISR(imu_sample_queue, &item, NULL);
+	{
+		if (imu_sample_queue)
+			xQueueSendFromISR(imu_sample_queue, &item, NULL);
+	}
 
 	// read_request can be NULL
 	if (sensor_readIT)
