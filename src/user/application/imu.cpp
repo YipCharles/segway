@@ -173,12 +173,12 @@ bool IMU::handle(void)
 
 			// atittude estimation
 			// TODO: better: fast update gyro-only attitude, slow update acc+mag compensate to gyro
-			if (timeout > 200ms)
-			{
-				MadgwickAHRSupdate(gyro[0], gyro[1], gyro[2],
-								   accel[0], accel[1], accel[2],
-								   0, 0, 0);
-			}
+//			if (timeout > 200ms)
+//			{
+//				MadgwickAHRSupdate(gyro[0], gyro[1], gyro[2],
+//								   accel[0], accel[1], accel[2],
+//								   0, 0, 0);
+//			}
 			
 			result = true;
 		}
@@ -187,7 +187,7 @@ bool IMU::handle(void)
 	if (0)
 	{
 		// very slow!
-		MadgwickAHRS_GetAngle(attitude);
+//		MadgwickAHRS_GetAngle(attitude);
 	}
 
 	return true;

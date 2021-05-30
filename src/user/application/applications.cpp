@@ -46,15 +46,17 @@ void startup_task(void *argument)
 	//	sgw_param_load_default();
 
 	platform_init();
-
+			motor_1.write(0.5);
+			motor_2.write(0.5);
+	while(1);
 	mavlink_system.sysid = 0x21;
 	mavlink_system.compid = 0;
 
 	//	sgw_init();
 
 	// task
-	xTaskCreate(gyro_control_task, "gyro ctrl", 256, NULL, RTOS_PRIORITY_HIGH, NULL);
-	xTaskCreate(attitude_control_task, "attitude ctrl", 256, NULL, RTOS_PRIORITY_NORMAL, NULL);
+//	xTaskCreate(gyro_control_task, "gyro ctrl", 256, NULL, RTOS_PRIORITY_HIGH, NULL);
+//	xTaskCreate(attitude_control_task, "attitude ctrl", 256, NULL, RTOS_PRIORITY_NORMAL, NULL);
 	
 	xTaskCreate(imu_task, "IMU", 1024, NULL, RTOS_PRIORITY_NORMAL, NULL);
 	
@@ -143,7 +145,7 @@ void gyro_control_task(void *argument)
 
 	for (;;)
 	{
-		imu.gyro[PITCH];
+//		imu.gyro[PITCH];
 
 		// pid_regular();
 
@@ -167,7 +169,7 @@ void attitude_control_task(void *argument)
 
 	for (;;)
 	{
-		MadgwickAHRS_GetAngle(attitude);
+//		MadgwickAHRS_GetAngle(attitude);
 
 		// pid_regular();
 
