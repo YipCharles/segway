@@ -1,38 +1,44 @@
-#ifndef PID_H
-#define PID_H
+#pragma once
+
 #include "datatypes.h"
-#include "lpf_2p.h"
+#include "LowPassFilter.h"
+#include "LowPassFilter2p.h"
 
-typedef struct
+class PID
 {
-	float kp;
-	float ki;
-	float kd;
+private:
+	float _kp;
+	float _ki;
+	float _kd;
 
-	float integral_limit;
+	float _out_factor;
+	float _acc_limit;
+	float _out_limit;
 
-	float output_limit;
-	float output_factor;	// make sure params in near magnitude 
+	float _error;
+	float _error_pre;
+	float _error_acc;
+	float _error_diff;
+	float _dt;
+	float _output;
 
-	lpf_2p_conf_t lpf;
-} pid_param_t;
+	LowPassFilterFloat lpf;
 
-typedef struct
-{
-	pid_param_t *param;
+public:
+	PID(){};
 
-	float error;
-	float error_pre;
-	float error_integral;
-	float error_differential;
-	float dt;
-	float output;
+	void init(float kp,
+			  float ki,
+			  float kd,
+			  float out_factor,
+			  float cutoff_freq,
+			  float acc_limit,
+			  float out_limit,
+			  float dt);
 
-	lpf_2p_t lpf;
-} pid_t;
-
-void pid_init(pid_t *pid, pid_param_t *pid_param, float dt);
-float pid_regulator(float error, pid_t *pid);
-
-#endif
-
+	float apply(float error);
+	void kpSet(float p);
+	void kiSet(float i);
+	void kdSet(float d);
+	void resset(void);
+};

@@ -177,9 +177,9 @@ bool MPU9250::init(SPI_HandleTypeDef *hspi, GPIO_TypeDef *hport, uint16_t hpin)
 	reg_write(GYRO_CONFIG, buffer, 1);
 	DELAY(1);
 
-	// acc scale: 4G
+	// acc scale: 2G
 	CLEAR_BUFFER(buffer);
-	buffer[0] = 0x01 << 3;
+	buffer[0] = 0x00 << 3;
 	reg_write(ACCEL_CONFIG, buffer, 1);
 
 	DELAY(1);

@@ -3,7 +3,7 @@
 // hal
 DEV_uart serial_1;
 DEV_uart serial_2;
-DEV_usb usb;
+//DEV_usb usb;
 
 // devices (refer from hal)
 Sonic sonic;
@@ -14,20 +14,20 @@ MPU9250 mpu;
 
 void platform_init(void)
 {
-	HAL_TIM_Base_Start_IT(&htim2);
+	HAL_TIM_Base_Start_IT(&htim11);
 
 	serial_1.init(huart1, 512);
 
 	serial_2.init(huart2, 128);
 
-	usb.init(512);
+	//usb.init(512);
 
-	mpu.init(&hspi1, SPI1_CS_1_GPIO_Port, SPI1_CS_1_Pin);
+	mpu.init(&hspi1, SPI_CS_GPIO_Port, SPI_CS_Pin);
 
 	sonic.init(serial_2);
 
-	motor_1.init(&htim3, TIM_CHANNEL_1, TIM_CHANNEL_2);
-	motor_2.init(&htim4, TIM_CHANNEL_1, TIM_CHANNEL_2);
+	motor_1.init(&htim3, TIM_CHANNEL_1, TIM_CHANNEL_2, false);
+	motor_2.init(&htim4, TIM_CHANNEL_1, TIM_CHANNEL_2, true);
 
 	// led_red.init(LED_RED_GPIO_Port, LED_RED_Pin, false);
 	// led_red.write(true);

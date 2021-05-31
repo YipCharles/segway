@@ -1,7 +1,8 @@
 #include "platform.h"
-#include "imu.h"
+#include "FreeRTOS.h"
 
 extern IMU imu;
+extern SemaphoreHandle_t sample_sync;
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
@@ -10,15 +11,15 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 
 extern "C"
 {
-	void usb_read_cb(uint8_t *buffer, uint32_t size)
-	{
-		usb.read_cb(buffer, size);
-	}
+//	void usb_read_cb(uint8_t *buffer, uint32_t size)
+//	{
+//		usb.read_cb(buffer, size);
+//	}
 
-	void usb_write_cb(bool ok)
-	{
-		usb.write_cb(ok);
-	}
+//	void usb_write_cb(bool ok)
+//	{
+//		usb.write_cb(ok);
+//	}
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
@@ -26,10 +27,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	if (htim->Instance == TIM10)
 	{
 		HAL_IncTick();
+		
 	}
 
-	else if (htim->Instance == TIM2)
+	else if (htim->Instance == TIM11)
 	{
-		imu.sample();
+		if (sample_sync)
+			xSemaphoreGiveFromISR(sample_sync, NULL);
+
 	}
 }

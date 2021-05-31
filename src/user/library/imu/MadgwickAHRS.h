@@ -13,15 +13,17 @@
 #ifndef MadgwickAHRS_h
 #define MadgwickAHRS_h
 
+#include "datatypes.h"
+
 //----------------------------------------------------------------------------------------------------
 // Variable declaration
 
 //---------------------------------------------------------------------------------------------------
 // Function declarations
 
-void MadgwickAHRSupdate(float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz);
-void MadgwickAHRSupdateIMU(float gx, float gy, float gz, float ax, float ay, float az);
 void MadgwickAHRS_GetAngle(float angle[3]);
+void MadgwickAHRS_Update(float gx, float gy, float gz, float ax, float ay, float az);
+void MadgwickAHRS_Reset(void);
 
 #endif
 //=====================================================================================================
