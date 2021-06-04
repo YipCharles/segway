@@ -37,3 +37,16 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 	}
 }
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	if (GPIO_Pin == GPIO_PIN_13)
+	{
+		encoder_1.sample(motor_1.readDuty() > 0);
+	}
+	
+	else if (GPIO_Pin == GPIO_PIN_14)
+	{
+		encoder_2.sample(motor_2.readDuty() > 0);
+	}
+}

@@ -11,10 +11,12 @@ private:
 
 	bool ready;
 	bool invert;
+	float duty;
 
 public:
 	Motor();
 	void init(TIM_HandleTypeDef *h, uint32_t ch1, uint32_t ch2, bool iv);
-	bool write(float duty);
+	bool write(float d);
+	float readDuty(void) { return duty; }
 };
 

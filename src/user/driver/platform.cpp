@@ -8,6 +8,7 @@ DEV_uart serial_2;
 // devices (refer from hal)
 Sonic sonic;
 Motor motor_1, motor_2;
+Encoder encoder_1, encoder_2;
 MPU9250 mpu;
 // LED led_red;
 // Oled oled;
@@ -34,6 +35,10 @@ void platform_init(void)
 	// led_red.write(false);
 
 	oled_init();
+
+	encoder_1.init(0.01, 500);
+	encoder_2.init(0.01, 500);
+	
 }
 
 

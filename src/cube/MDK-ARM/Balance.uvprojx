@@ -338,7 +338,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F401xE</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32F4xx/Include;../Drivers/CMSIS/Include;..\..\user\library\freertos\portable\GCC\ARM_CM4F;..\..\user\library\freertos\include;..\..\user\driver;..\..\user\driver\hal;..\..\user\application;..\..\user;..\..\user\application\imu;..\..\user\library\mavlink\v1.0\common;..\..\user\library\mavlink\v1.0;..\..\user\library\math;..\..\user\library\imu;..\..\user\library\control</IncludePath>
+              <IncludePath>../Core/Inc; ../Drivers/STM32F4xx_HAL_Driver/Inc; ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy; ../Drivers/CMSIS/Device/ST/STM32F4xx/Include; ../Drivers/CMSIS/Include; ..\..\user\library\freertos\portable\GCC\ARM_CM4F; ..\..\user\library\freertos\include; ..\..\user\driver; ..\..\user\driver\hal; ..\..\user\application; ..\..\user; ..\..\user\application\imu; ..\..\user\library\mavlink\v1.0\common; ..\..\user\library\mavlink\v1.0; ..\..\user\library\math; ..\..\user\library\imu; ..\..\user\library\control</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -388,14 +388,14 @@
               <FilePath>..\..\user\application\applications.cpp</FilePath>
             </File>
             <File>
-              <FileName>imu.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\..\user\application\imu.cpp</FilePath>
-            </File>
-            <File>
               <FileName>interrupt.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\user\application\interrupt.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>imu.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\user\application\imu.cpp</FilePath>
             </File>
           </Files>
         </Group>
@@ -483,14 +483,14 @@
           <GroupName>Driver</GroupName>
           <Files>
             <File>
-              <FileName>motor.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\..\user\driver\motor.cpp</FilePath>
-            </File>
-            <File>
               <FileName>platform.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\user\driver\platform.cpp</FilePath>
+            </File>
+            <File>
+              <FileName>motor.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\user\driver\motor.cpp</FilePath>
             </File>
             <File>
               <FileName>mpu9250.cpp</FileName>
@@ -511,6 +511,11 @@
               <FileName>oled.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\user\driver\oled.c</FilePath>
+            </File>
+            <File>
+              <FileName>encoder.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\user\driver\encoder.cpp</FilePath>
             </File>
           </Files>
         </Group>

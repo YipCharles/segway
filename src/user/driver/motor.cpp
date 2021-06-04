@@ -34,13 +34,15 @@ void Motor::init(TIM_HandleTypeDef *h, uint32_t ch1, uint32_t ch2, bool iv)
 	ready = true;
 }
 
-bool Motor::write(float duty)
+bool Motor::write(float d)
 {
 	if (!ready)
 		return false;
 
 	if (invert)
-		duty = -duty;
+		duty = -d;
+	else
+		duty = d;
 
 	uint32_t arr = __HAL_TIM_GetAutoreload(timer);
 

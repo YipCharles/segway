@@ -24,8 +24,6 @@ static float target_attitude[3];
 static float attitude_ctrl_output[3];
 PID pid_gyro[3];
 PID pid_attitude[3];
-static float pwm_output[2];
-static float last_pwm_output[2];
 volatile int DebugCnt;
 
 extern "C"
@@ -82,7 +80,7 @@ void startup_task(void *argument)
 	//xTaskCreate(periperal_task, "Periperal", 512, NULL, RTOS_PRIORITY_NORMAL, NULL);
 
 //#ifdef DEBUG
-//	xTaskCreate(test_task, "Test", 1024, NULL, RTOS_PRIORITY_LOWEST, NULL);
+	xTaskCreate(test_task, "Test", 1024, NULL, RTOS_PRIORITY_HIGH, NULL);
 //	xTaskCreate(monitor_task, "Monitor", 256, NULL, RTOS_PRIORITY_NORMAL, NULL);
 //#endif
 
@@ -90,6 +88,8 @@ void startup_task(void *argument)
 }
 
 volatile float s, s_lp, s_lp_2;
+int32_t speed_1, speed_2;
+
 void test_task(void *argument)
 {
 	float i = 0;
@@ -99,8 +99,13 @@ void test_task(void *argument)
 	
 	for (;;)
 	{
+		encoder_1.handle();
+		encoder_2.handle();
 
-		vTaskDelay(1);
+		speed_1 = encoder_1.speedGet();
+		speed_2 = encoder_2.speedGet();
+
+		vTaskDelay(2);
 	}
 }
 
@@ -133,6 +138,30 @@ void imu_task(void *argument)
 
 		// vTaskDelay(1);
 	}
+}
+
+typedef struct
+{
+	float pwm_out;
+	float last_pwm_out;
+
+	float gyro_ctrl_out;
+	float speed_ctrl_out;
+
+} pwm_t;
+
+pwm_t pwm_1, pwm_2;
+
+bool pwm_calculate(pwm_t *pwm)
+{
+
+
+
+	pwm->pwm_out = constrain_float(pwm->pwm_out,
+								   pwm->last_pwm_out - 0.01, pwm->last_pwm_out + 0.01);
+	pwm->last_pwm_out = pwm->pwm_out;
+
+	return true;
 }
 
 void gyro_control_task(void *argument)
@@ -169,25 +198,17 @@ void gyro_control_task(void *argument)
 			error = 0 - gyro[YAW];
 			output_yaw = -pid_gyro[YAW].apply(error);
 
-			pwm_output[0] = output_pitch + output_yaw;
-			pwm_output[1] = output_pitch - output_yaw;
+//			pwm_output[0] = output_pitch + output_yaw;
+//			pwm_output[1] = output_pitch - output_yaw;
 
-			// TODO: saturate?
-			if (pwm_output[0] > 1.0 || pwm_output[1] > 1.0)
-			{
-				
-			}
+//			// TODO: saturate?
+//			if (pwm_output[0] > 1.0 || pwm_output[1] > 1.0)
+//			{
+//				
+//			}
 
-			pwm_output[0] = constrain_float(pwm_output[0],
-											last_pwm_output[0] - 0.01, last_pwm_output[0] + 0.01);
-			last_pwm_output[0] = pwm_output[0];
-
-			pwm_output[1] = constrain_float(pwm_output[1],
-											last_pwm_output[1] - 0.01, last_pwm_output[1] + 0.01);
-			last_pwm_output[1] = pwm_output[1];
-			
-			motor_1.write(pwm_output[0]);
-			motor_2.write(pwm_output[1]);
+			motor_1.write(pwm_1.pwm_out);
+			motor_2.write(pwm_2.pwm_out);
 
 			//DebugCnt++;
 		}
@@ -215,22 +236,75 @@ void attitude_control_task(void *argument)
 	for (;;)
 	{
 		float error, output;
+		int32_t speed_1, speed_2;
+		int32_t angle_1, angle_2;
 
 		// if (imu.attitude_even())
 		{
-			imu.attitudeGet(attitude);
+			speed_1 = encoder_1.speedGet();
+			speed_2 = encoder_2.speedGet();
 
-			target_attitude[PITCH] = 0;
-			error = target_attitude[PITCH] - attitude[PITCH];
+//			error = target_speed[0] - speed_1;
 
-			attitude_ctrl_output[PITCH] = -pid_attitude[PITCH].apply(error);
-			
-			error = target_attitude[YAW] - attitude[YAW];
+//			speed_ctrl_output[PITCH] = -pid_speed[PITCH].apply(error);
 
-			attitude_ctrl_output[YAW] = pid_attitude[YAW].apply(error);
 
 			vTaskDelayUntil(&tick_abs, 5);
 		}
+	}
+}
+
+void enc_control_task(void *argument)
+{
+	TickType_t tick_abs;
+
+	tick_abs = xTaskGetTickCount();
+
+	pid_gyro[PITCH].init(3.5, 0, 0,
+						 0.001,
+						 0,
+						 0, 1,
+						 1.0f / 1000);
+
+	pid_gyro[YAW].init(3, 0, 0,
+					   0.001,
+					   0,
+					   0, 1,
+					   1.0f / 1000);
+
+	for (;;)
+	{
+		volatile static float error, output_pitch, output_yaw;
+		float out_1, out_2;
+
+		imu.gyroGet(gyro);
+
+		error = attitude_ctrl_output[PITCH] - gyro[PITCH];
+		output_pitch = -pid_gyro[PITCH].apply(error);
+
+		error = 0 - gyro[YAW];
+		output_yaw = -pid_gyro[YAW].apply(error);
+
+//		pwm_output[0] = output_pitch + output_yaw;
+//		pwm_output[1] = output_pitch - output_yaw;
+
+//		// TODO: saturate?
+//		if (pwm_output[0] > 1.0 || pwm_output[1] > 1.0)
+//		{
+//		}
+
+//		pwm_output[0] = constrain_float(pwm_output[0],
+//										last_pwm_output[0] - 0.01, last_pwm_output[0] + 0.01);
+//		last_pwm_output[0] = pwm_output[0];
+
+//		pwm_output[1] = constrain_float(pwm_output[1],
+//										last_pwm_output[1] - 0.01, last_pwm_output[1] + 0.01);
+//		last_pwm_output[1] = pwm_output[1];
+
+//		motor_1.write(pwm_output[0]);
+//		motor_2.write(pwm_output[1]);
+
+		//DebugCnt++;
 	}
 }
 

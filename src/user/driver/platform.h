@@ -21,7 +21,8 @@ extern "C"
 //#include "hal_usb.h"
 
 #include "sonic.h"
-#include "Motor.h"
+#include "motor.h"
+#include "encoder.h"
 #include "led.h"
 #include "mpu9250.h"
 #include "oled.h"
@@ -32,6 +33,7 @@ extern Sonic sonic;
 extern LED led_red;
 //extern Oled oled;
 extern Motor motor_1, motor_2;
+extern Encoder encoder_1, encoder_2;
 //extern MPU9250 mpu;
 //extern DEV_usb usb;
 
