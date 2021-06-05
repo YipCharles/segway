@@ -106,7 +106,7 @@ bool IMU::handle(void)
 		}
 	}
 	
-	while (xQueueReceive(imu_sample_queue, &item, 1))
+	while (xQueueReceive(imu_sample_queue, &item, 1000))
 	{
 #if 0
 		// over scale
@@ -124,7 +124,7 @@ bool IMU::handle(void)
 		gyro_raw[ROLL] = -item.gyro[1];
 		gyro_raw[PITCH] = -item.gyro[0];
 		gyro_raw[YAW] = item.gyro[2];
-		accel_raw[ROLL] = -item.accel[1];
+		accel_raw[ROLL] = -item.accel[1]+1000;
 		accel_raw[PITCH] = -item.accel[0];
 		accel_raw[YAW] = item.accel[2];
 

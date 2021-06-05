@@ -14,11 +14,11 @@ extern "C"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
-//#include "usbd_cdc_if.h"
+#include "usbd_cdc_if.h"
 }
 
 #include "hal_uart.h"
-//#include "hal_usb.h"
+#include "hal_usb.h"
 
 #include "sonic.h"
 #include "motor.h"
@@ -32,10 +32,10 @@ extern DEV_uart serial_2;
 extern Sonic sonic;
 extern LED led_red;
 //extern Oled oled;
-extern Motor motor_1, motor_2;
-extern Encoder encoder_1, encoder_2;
+extern Motor motor[2];
+extern Encoder encoder[2];
 //extern MPU9250 mpu;
-//extern DEV_usb usb;
+extern DEV_usb usb;
 
 extern "C"
 {

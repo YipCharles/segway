@@ -21,9 +21,15 @@ SemaphoreHandle_t sample_sync = NULL;
 static float gyro[3];
 static float attitude[3];
 static float target_attitude[3];
+static float target_speed;
+static float target_speed_angle;
 static float attitude_ctrl_output[3];
+static float enc_ctrl_output[3];
 PID pid_gyro[3];
 PID pid_attitude[3];
+PID pid_enc[2];
+static bool is_stable;
+
 volatile int DebugCnt;
 
 extern "C"
@@ -45,6 +51,7 @@ static void mavlink_proc(mavlink_message_t &msg);
 void attitude_control_task(void *argument);
 void gyro_control_task(void *argument);
 void imu_sample_task(void *argument);
+void enc_control_task(void *argument);
 
 void user_loop(void)
 {
@@ -70,16 +77,17 @@ void startup_task(void *argument)
 	// task
 	xTaskCreate(imu_sample_task, "IMU sample", 256, NULL, RTOS_PRIORITY_HIGH, NULL);	
 	xTaskCreate(imu_task, "IMU", 256, NULL, RTOS_PRIORITY_HIGH, NULL);
-	xTaskCreate(gyro_control_task, "gyro ctrl", 256, NULL, RTOS_PRIORITY_HIGH, NULL);
+	xTaskCreate(gyro_control_task, "gyro ctrl", 256, NULL, RTOS_PRIORITY_NORMAL, NULL);
 	xTaskCreate(attitude_control_task, "attitude ctrl", 256, NULL, RTOS_PRIORITY_NORMAL, NULL);
+	xTaskCreate(enc_control_task, "enc ctrl", 256, NULL, RTOS_PRIORITY_NORMAL, NULL);
 
-//	xTaskCreate(serial_task, "Serial", 512, NULL, RTOS_PRIORITY_NORMAL, NULL);
-//	xTaskCreate(sonic_task, "Sonic", 256, NULL, RTOS_PRIORITY_NORMAL, NULL);
-//	xTaskCreate(oled_task, "Oled", 256, NULL, RTOS_PRIORITY_LOWEST, NULL);
-//	xTaskCreate(battery_task, "Battery", 256, NULL, RTOS_PRIORITY_NORMAL, NULL);
+	xTaskCreate(serial_task, "Serial", 512, NULL, RTOS_PRIORITY_NORMAL, NULL);
+	//	xTaskCreate(sonic_task, "Sonic", 256, NULL, RTOS_PRIORITY_NORMAL, NULL);
+	//	xTaskCreate(oled_task, "Oled", 256, NULL, RTOS_PRIORITY_LOWEST, NULL);
+	//	xTaskCreate(battery_task, "Battery", 256, NULL, RTOS_PRIORITY_NORMAL, NULL);
 	//xTaskCreate(periperal_task, "Periperal", 512, NULL, RTOS_PRIORITY_NORMAL, NULL);
 
-//#ifdef DEBUG
+	//#ifdef DEBUG
 	xTaskCreate(test_task, "Test", 1024, NULL, RTOS_PRIORITY_HIGH, NULL);
 //	xTaskCreate(monitor_task, "Monitor", 256, NULL, RTOS_PRIORITY_NORMAL, NULL);
 //#endif
@@ -88,7 +96,7 @@ void startup_task(void *argument)
 }
 
 volatile float s, s_lp, s_lp_2;
-int32_t speed_1, speed_2;
+int32_t speed[2];
 
 void test_task(void *argument)
 {
@@ -99,11 +107,6 @@ void test_task(void *argument)
 	
 	for (;;)
 	{
-		encoder_1.handle();
-		encoder_2.handle();
-
-		speed_1 = encoder_1.speedGet();
-		speed_2 = encoder_2.speedGet();
 
 		vTaskDelay(2);
 	}
@@ -154,9 +157,6 @@ pwm_t pwm_1, pwm_2;
 
 bool pwm_calculate(pwm_t *pwm)
 {
-
-
-
 	pwm->pwm_out = constrain_float(pwm->pwm_out,
 								   pwm->last_pwm_out - 0.01, pwm->last_pwm_out + 0.01);
 	pwm->last_pwm_out = pwm->pwm_out;
@@ -188,7 +188,7 @@ void gyro_control_task(void *argument)
 		float out_1, out_2;
 
 		// "loose coupling" here, enable to make it "tight coupling"
-		// if (imu.gyro_even())
+		if (imu.gyro_even())
 		{
 			imu.gyroGet(gyro);
 
@@ -206,9 +206,9 @@ void gyro_control_task(void *argument)
 //			{
 //				
 //			}
-
-			motor_1.write(pwm_1.pwm_out);
-			motor_2.write(pwm_2.pwm_out);
+			
+//			motor[0].write(pwm_1.pwm_out);
+//			motor[1].write(pwm_2.pwm_out);
 
 			//DebugCnt++;
 		}
@@ -241,8 +241,8 @@ void attitude_control_task(void *argument)
 
 		// if (imu.attitude_even())
 		{
-			speed_1 = encoder_1.speedGet();
-			speed_2 = encoder_2.speedGet();
+			// speed_1 = encoder_1.speedGet();
+			// speed_2 = encoder_2.speedGet();
 
 //			error = target_speed[0] - speed_1;
 
@@ -257,52 +257,40 @@ void attitude_control_task(void *argument)
 void enc_control_task(void *argument)
 {
 	TickType_t tick_abs;
+	volatile static float error;
+	float rate[2];
+
+	pid_enc[0].init(3.5, 0, 0,
+					0.001,
+					0,
+					0, 1,
+					1.0f / 1000);
+	pid_enc[1].init(3.5, 0, 0,
+					0.001,
+					0,
+					0, 1,
+					1.0f / 1000);
 
 	tick_abs = xTaskGetTickCount();
 
-	pid_gyro[PITCH].init(3.5, 0, 0,
-						 0.001,
-						 0,
-						 0, 1,
-						 1.0f / 1000);
-
-	pid_gyro[YAW].init(3, 0, 0,
-					   0.001,
-					   0,
-					   0, 1,
-					   1.0f / 1000);
-
 	for (;;)
 	{
-		volatile static float error, output_pitch, output_yaw;
-		float out_1, out_2;
 
-		imu.gyroGet(gyro);
+		// TODO: convert the rate of wheal
+		rate[0] = target_speed - target_speed_angle;
+		rate[1] = target_speed + target_speed_angle;
 
-		error = attitude_ctrl_output[PITCH] - gyro[PITCH];
-		output_pitch = -pid_gyro[PITCH].apply(error);
+		for (size_t i = 0; i < 2; i++)
+		{
+			encoder[i].handle();
 
-		error = 0 - gyro[YAW];
-		output_yaw = -pid_gyro[YAW].apply(error);
+			speed[i] = encoder[i].speedGet();
 
-//		pwm_output[0] = output_pitch + output_yaw;
-//		pwm_output[1] = output_pitch - output_yaw;
+			error = rate[i] - speed[i];			
+			enc_ctrl_output[i] = pid_enc[i].apply(error);
+		}
 
-//		// TODO: saturate?
-//		if (pwm_output[0] > 1.0 || pwm_output[1] > 1.0)
-//		{
-//		}
-
-//		pwm_output[0] = constrain_float(pwm_output[0],
-//										last_pwm_output[0] - 0.01, last_pwm_output[0] + 0.01);
-//		last_pwm_output[0] = pwm_output[0];
-
-//		pwm_output[1] = constrain_float(pwm_output[1],
-//										last_pwm_output[1] - 0.01, last_pwm_output[1] + 0.01);
-//		last_pwm_output[1] = pwm_output[1];
-
-//		motor_1.write(pwm_output[0]);
-//		motor_2.write(pwm_output[1]);
+		vTaskDelayUntil(&tick_abs, 2);
 
 		//DebugCnt++;
 	}
@@ -399,7 +387,7 @@ void serial_task(void *argument)
 		// period: 1000 ms
 		size = 0;
 
-		//size = usb.read(buffer, 128);
+		size = usb.read(buffer, 128);
 
 		for (size_t i = 0; i < size; i++)
 		{
