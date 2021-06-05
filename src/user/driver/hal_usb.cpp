@@ -31,13 +31,15 @@ void DEV_usb::init(uint32_t size)
 
 uint32_t DEV_usb::read(uint8_t *buffer, uint32_t size)
 {
-	if (!rx_size)
-		return 0;
 	if (!ready)
 		return 0;
+
+	if (!rx_size)
+		return 0;
+
 	uint32_t once_size;
 
-	if (xSemaphoreTake(read_mutex, 10) == pdTRUE)
+	//if (xSemaphoreTake(read_mutex, 10) == pdTRUE)
 	{
 		if (rx_size > size)
 		{
@@ -65,8 +67,8 @@ void DEV_usb::write(uint8_t *buffer, uint32_t size)
 
 	while (size)
 	{
-		// there is no proper call back func to run write_cb()
 		// xSemaphoreTake(write_mutex, 100);
+		if (xSemaphoreTake(write_mutex, 1) == pdTRUE)
 		{
 			timeout = 1;
 			if (size > buffer_size)
@@ -96,18 +98,15 @@ void DEV_usb::read_cb(uint8_t *buffer, uint32_t size)
 	if (!ready)
 		return;
 
-	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-	
-	if (xSemaphoreTakeFromISR(read_mutex, &xHigherPriorityTaskWoken) == pdTRUE)
+	// if (xSemaphoreTakeFromISR(read_mutex, NULL) == pdTRUE)
 	{
 		if (rx_size + size > buffer_size)
 			size = buffer_size - rx_size;
 
 		memcpy(rx_buffer + rx_size, buffer, size);
 		rx_size += size;
-		
-		xSemaphoreGiveFromISR(write_mutex, &xHigherPriorityTaskWoken);
-		portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+	
+//		xSemaphoreGiveFromISR(read_mutex, NULL);
 	}
 }
 
@@ -115,6 +114,7 @@ void DEV_usb::write_cb(bool ok)
 {
 	if (!ready)
 		return;
+	
 	usb_tx_ok = ok;
 
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;

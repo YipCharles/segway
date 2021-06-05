@@ -503,6 +503,11 @@
               <FilePath>..\..\user\driver\hal_uart.cpp</FilePath>
             </File>
             <File>
+              <FileName>hal_usb.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\..\user\driver\hal_usb.cpp</FilePath>
+            </File>
+            <File>
               <FileName>sonic.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\user\driver\sonic.cpp</FilePath>
@@ -516,11 +521,6 @@
               <FileName>encoder.cpp</FileName>
               <FileType>8</FileType>
               <FilePath>..\..\user\driver\encoder.cpp</FilePath>
-            </File>
-            <File>
-              <FileName>hal_usb.cpp</FileName>
-              <FileType>8</FileType>
-              <FilePath>..\..\user\driver\hal_usb.cpp</FilePath>
             </File>
           </Files>
         </Group>

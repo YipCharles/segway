@@ -23,6 +23,10 @@
 #include "usbd_cdc_if.h"
 
 /* USER CODE BEGIN INCLUDE */
+#include "datatypes.h"
+extern void usb_write_cb(bool ok);
+extern void usb_read_cb(uint8_t *buffer, uint32_t size);
+
 
 /* USER CODE END INCLUDE */
 
@@ -262,6 +266,7 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
 static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 {
   /* USER CODE BEGIN 6 */
+  usb_read_cb(Buf, *Len);
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
   return (USBD_OK);
@@ -309,6 +314,7 @@ static int8_t CDC_TransmitCplt_FS(uint8_t *Buf, uint32_t *Len, uint8_t epnum)
 {
   uint8_t result = USBD_OK;
   /* USER CODE BEGIN 13 */
+  usb_write_cb(1);
   UNUSED(Buf);
   UNUSED(Len);
   UNUSED(epnum);
