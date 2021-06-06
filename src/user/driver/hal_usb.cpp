@@ -15,8 +15,8 @@ void DEV_usb::init(uint32_t size)
 	
 	rx_buffer = (uint8_t *)pvPortMalloc(buffer_size);
 	memset(rx_buffer, 0, buffer_size);
-	// tx_buffer = (uint8_t *)pvPortMalloc(buffer_size);
-	// memset(tx_buffer, 0, buffer_size);
+	tx_buffer = (uint8_t *)pvPortMalloc(buffer_size);
+	memset(tx_buffer, 0, buffer_size);
 
 	rx_size = tx_size = 0;
 
@@ -67,30 +67,34 @@ void DEV_usb::write(uint8_t *buffer, uint32_t size)
 
 	while (size)
 	{
-		// xSemaphoreTake(write_mutex, 100);
-		if (xSemaphoreTake(write_mutex, 1) == pdTRUE)
+// 		if (xSemaphoreTake(write_mutex, 0) == pdTRUE)
 		{
 			timeout = 1;
+			
+			// TODO: not good
 			if (size > buffer_size)
 			{
-				while(CDC_Transmit_FS(buffer, buffer_size) != USBD_OK && timeout--)
+				memcpy(tx_buffer, buffer, buffer_size);
+				while(CDC_Transmit_FS(tx_buffer, buffer_size) != USBD_OK && timeout--)
 					vTaskDelay(1);
 				size -= buffer_size;
 				buffer += buffer_size;
 			}
 			else
 			{
-				while(CDC_Transmit_FS(buffer, size) != USBD_OK && timeout--)
-					vTaskDelay(1);
+//				while(CDC_Transmit_FS(buffer, size) != USBD_OK && timeout--)
+//					vTaskDelay(1);
+				memcpy(tx_buffer, buffer, size);
+				CDC_Transmit_FS(tx_buffer, size);
 				size = 0;
 			}
 		}
 	}
 }
 
-void DEV_usb::write(uint8_t *s)
+void DEV_usb::write(const char * s)
 {
-	write(s, strlen((const char *)s));
+	write((uint8_t *)s, strlen(s));
 }
 
 void DEV_usb::read_cb(uint8_t *buffer, uint32_t size)
@@ -117,12 +121,12 @@ void DEV_usb::write_cb(bool ok)
 	
 	usb_tx_ok = ok;
 
-	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+	//BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
 	if (usb_tx_ok)
 	{
-		xSemaphoreGiveFromISR(write_mutex, &xHigherPriorityTaskWoken);
-		portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+		// FreeRTOS API used, usb INT prio should be lower.
+		xSemaphoreGiveFromISR(write_mutex, NULL);
 	}
 }
 

@@ -140,6 +140,8 @@ public:
 	bool calibrate_accel(void);
 	bool attitudeGet(float att[3]);
 	bool gyroGet(float g[3]);
+	bool accelGet(float g[3]);
+	bool magGet(float g[3]);	
 	bool gyro_even();
 	bool attitude_even();
 	;

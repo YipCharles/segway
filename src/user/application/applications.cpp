@@ -14,22 +14,22 @@ static TaskHandle_t handle_startup;
 mavlink_system_t mavlink_system;
 static uint8_t mavlink_send_buffer[256];
 static uint32_t mavlink_send_pos = 0;
-static DEV_uart *mavlink = &serial_1;
-//static DEV_usb *shell = &usb;
+static DEV_usb *mavlink = NULL;
+// static DEV_usb *shell = &usb;
 IMU imu;
 SemaphoreHandle_t sample_sync = NULL;
-static float gyro[3];
+static float gyro[3], accel[3], mag[3];
 static float attitude[3];
 static float target_attitude[3];
-static float target_speed;
+volatile static float target_speed;
 static float target_speed_angle;
 static float attitude_ctrl_output[3];
-static float enc_ctrl_output[3];
+volatile static float enc_speed_ctrl_output;
 PID pid_gyro[3];
 PID pid_attitude[3];
-PID pid_enc[2];
+PID pid_enc_speed;
+float cur_speed, cur_angle_speed;
 static bool is_stable;
-
 volatile int DebugCnt;
 
 extern "C"
@@ -66,8 +66,8 @@ void startup_task(void *argument)
 	//	sgw_param_load_default();
 
 	platform_init();
-	
-	imu.init();	
+
+	imu.init();
 
 	mavlink_system.sysid = 0x21;
 	mavlink_system.compid = 0;
@@ -75,40 +75,43 @@ void startup_task(void *argument)
 	//	sgw_init();
 
 	// task
-	xTaskCreate(imu_sample_task, "IMU sample", 256, NULL, RTOS_PRIORITY_HIGH, NULL);	
+	xTaskCreate(imu_sample_task, "IMU sample", 256, NULL, RTOS_PRIORITY_HIGH, NULL);
 	xTaskCreate(imu_task, "IMU", 256, NULL, RTOS_PRIORITY_HIGH, NULL);
 	xTaskCreate(gyro_control_task, "gyro ctrl", 256, NULL, RTOS_PRIORITY_NORMAL, NULL);
 	xTaskCreate(attitude_control_task, "attitude ctrl", 256, NULL, RTOS_PRIORITY_NORMAL, NULL);
 	xTaskCreate(enc_control_task, "enc ctrl", 256, NULL, RTOS_PRIORITY_NORMAL, NULL);
 
 	xTaskCreate(serial_task, "Serial", 512, NULL, RTOS_PRIORITY_NORMAL, NULL);
-	//	xTaskCreate(sonic_task, "Sonic", 256, NULL, RTOS_PRIORITY_NORMAL, NULL);
-	//	xTaskCreate(oled_task, "Oled", 256, NULL, RTOS_PRIORITY_LOWEST, NULL);
-	//	xTaskCreate(battery_task, "Battery", 256, NULL, RTOS_PRIORITY_NORMAL, NULL);
+	xTaskCreate(sonic_task, "Sonic", 256, NULL, RTOS_PRIORITY_NORMAL, NULL);
+	xTaskCreate(oled_task, "Oled", 256, NULL, RTOS_PRIORITY_LOWEST, NULL);
+	xTaskCreate(battery_task, "Battery", 256, NULL, RTOS_PRIORITY_NORMAL, NULL);
 	//xTaskCreate(periperal_task, "Periperal", 512, NULL, RTOS_PRIORITY_NORMAL, NULL);
 
 	//#ifdef DEBUG
 	xTaskCreate(test_task, "Test", 1024, NULL, RTOS_PRIORITY_HIGH, NULL);
-//	xTaskCreate(monitor_task, "Monitor", 256, NULL, RTOS_PRIORITY_NORMAL, NULL);
-//#endif
+	//	xTaskCreate(monitor_task, "Monitor", 256, NULL, RTOS_PRIORITY_NORMAL, NULL);
+	//#endif
 
 	vTaskDelete(handle_startup);
 }
 
 volatile float s, s_lp, s_lp_2;
-int32_t speed[2];
-
+volatile bool need;
 void test_task(void *argument)
 {
 	float i = 0;
 	TickType_t tick_abs;
 
 	tick_abs = xTaskGetTickCount();
-	
+
 	for (;;)
 	{
+		//		if (need)
+		//			shell->write("hello");
 
-		vTaskDelay(2);
+		// mavlink->write((uint8_t *)"hello", 6);
+
+		vTaskDelay(200);
 	}
 }
 
@@ -125,6 +128,8 @@ void imu_sample_task(void *argument)
 		{
 			// push sensor raw data to queue
 			imu.sample();
+
+			// DebugCnt++;
 		}
 	}
 }
@@ -138,7 +143,6 @@ void imu_task(void *argument)
 	{
 		// will send a message to gyro ctrl thread
 		imu.handle();
-
 		// vTaskDelay(1);
 	}
 }
@@ -155,13 +159,12 @@ typedef struct
 
 pwm_t pwm_1, pwm_2;
 
-bool pwm_calculate(pwm_t *pwm)
+// because of the mos driver chip
+static void pwm_constrain(pwm_t *pwm)
 {
 	pwm->pwm_out = constrain_float(pwm->pwm_out,
-								   pwm->last_pwm_out - 0.01, pwm->last_pwm_out + 0.01);
+								   pwm->last_pwm_out - 8, pwm->last_pwm_out + 8);
 	pwm->last_pwm_out = pwm->pwm_out;
-
-	return true;
 }
 
 void gyro_control_task(void *argument)
@@ -170,17 +173,17 @@ void gyro_control_task(void *argument)
 
 	tick_abs = xTaskGetTickCount();
 
-	pid_gyro[PITCH].init(3.5, 0, 0,
-						 0.001,
+	pid_gyro[PITCH].init(3, 0, 0,
 						 0,
-						 0, 1,
-						 1.0f / 1000);
+						 300,
+						 30,
+						 1000);
 
 	pid_gyro[YAW].init(3, 0, 0,
-					   0.001,
 					   0,
-					   0, 1,
-					   1.0f / 1000);
+					   300,
+					   30,
+					   1000);
 
 	for (;;)
 	{
@@ -191,24 +194,36 @@ void gyro_control_task(void *argument)
 		if (imu.gyro_even())
 		{
 			imu.gyroGet(gyro);
+			imu.accelGet(accel);
+			imu.magGet(mag);
 
 			error = attitude_ctrl_output[PITCH] - gyro[PITCH];
-			output_pitch = -pid_gyro[PITCH].apply(error);
+			output_pitch = pid_gyro[PITCH].apply(error);
 
 			error = 0 - gyro[YAW];
-			output_yaw = -pid_gyro[YAW].apply(error);
+			output_yaw = pid_gyro[YAW].apply(error);
 
-//			pwm_output[0] = output_pitch + output_yaw;
-//			pwm_output[1] = output_pitch - output_yaw;
+			pwm_1.pwm_out = output_pitch + output_yaw;
+			pwm_2.pwm_out = output_pitch - output_yaw;
 
-//			// TODO: saturate?
-//			if (pwm_output[0] > 1.0 || pwm_output[1] > 1.0)
-//			{
-//				
-//			}
-			
-//			motor[0].write(pwm_1.pwm_out);
-//			motor[1].write(pwm_2.pwm_out);
+			// TODO: saturate?
+			// if (pwm_1 > 1.0 || pwm_2 > 1.0)
+
+			pwm_constrain(&pwm_1);
+			pwm_constrain(&pwm_2);
+
+			motor[0].write(pwm_1.pwm_out);
+			motor[1].write(pwm_2.pwm_out);
+
+			mavlink_msg_highres_imu_send(MAVLINK_COMM_0, (uint64_t)tick_abs * 1000,
+										 accel[0], accel[1], accel[2],
+										 gyro[0], gyro[1], gyro[2],
+										 mag[0], mag[1], mag[2],
+										 0, 0, 0, 0, 0, 0);
+
+			mavlink_msg_vibration_send(MAVLINK_COMM_0, (uint64_t)tick_abs * 1000,
+									   accel[0], accel[1], accel[2],
+									   0, 0, 0);
 
 			//DebugCnt++;
 		}
@@ -221,18 +236,17 @@ void attitude_control_task(void *argument)
 
 	tick_abs = xTaskGetTickCount();
 
-	pid_attitude[PITCH].init(3.5, 0, 0,
-						 0.001,
-						 0,
-						 0, 1,
-						 1.0f / 1000);
-
+	pid_attitude[PITCH].init(3, 0, 0,
+							 0,
+							 50,
+							 30,
+							 1000);
 	pid_attitude[YAW].init(3, 0, 0,
-					   0.001,
-					   0,
-					   0, 1,
-					   1.0f / 1000);
-	
+						   0,
+						   10,
+						   30,
+						   1000);
+
 	for (;;)
 	{
 		float error, output;
@@ -241,18 +255,24 @@ void attitude_control_task(void *argument)
 
 		// if (imu.attitude_even())
 		{
-			// speed_1 = encoder_1.speedGet();
-			// speed_2 = encoder_2.speedGet();
+			imu.attitudeGet(attitude);
 
-//			error = target_speed[0] - speed_1;
+			error = target_attitude[PITCH] - attitude[PITCH];
+			attitude_ctrl_output[PITCH] = pid_attitude[PITCH].apply(error);
 
-//			speed_ctrl_output[PITCH] = -pid_speed[PITCH].apply(error);
+			error = target_attitude[YAW] - attitude[YAW];
+			attitude_ctrl_output[YAW] = pid_attitude[YAW].apply(error);
 
+			mavlink_msg_attitude_send(MAVLINK_COMM_0, (uint64_t)tick_abs * 1000,
+									  attitude[ROLL], attitude[PITCH], attitude[YAW],
+									  0, 0, 0);
 
 			vTaskDelayUntil(&tick_abs, 5);
 		}
 	}
 }
+
+int32_t speed[2];
 
 void enc_control_task(void *argument)
 {
@@ -260,16 +280,10 @@ void enc_control_task(void *argument)
 	volatile static float error;
 	float rate[2];
 
-	pid_enc[0].init(3.5, 0, 0,
-					0.001,
-					0,
-					0, 1,
-					1.0f / 1000);
-	pid_enc[1].init(3.5, 0, 0,
-					0.001,
-					0,
-					0, 1,
-					1.0f / 1000);
+	pid_enc_speed.init(2, 0, 0,
+					   0, 10,
+					   30,
+					   1000);
 
 	tick_abs = xTaskGetTickCount();
 
@@ -285,12 +299,17 @@ void enc_control_task(void *argument)
 			encoder[i].handle();
 
 			speed[i] = encoder[i].speedGet();
-
-			error = rate[i] - speed[i];			
-			enc_ctrl_output[i] = pid_enc[i].apply(error);
 		}
 
-		vTaskDelayUntil(&tick_abs, 2);
+		cur_speed = (speed[0] + speed[1]) / 2;
+		cur_angle_speed = (160);
+
+		error = target_speed - cur_speed;
+		enc_speed_ctrl_output = -pid_enc_speed.apply(error);
+
+		target_attitude[PITCH] = enc_speed_ctrl_output * 1.001f;
+
+		vTaskDelayUntil(&tick_abs, 5);
 
 		//DebugCnt++;
 	}
@@ -323,9 +342,9 @@ void sonic_task(void *argument)
 	{
 		if (sonic.read(distance))
 		{
-		}
 
-		mavlink_msg_nav_controller_output_send(MAVLINK_COMM_0, 0, 0, 0, 0, 0, distance, 9, 9);
+			mavlink_msg_obstacle_distance_send(MAVLINK_COMM_0, 0, 1, &distance, 0, 0, 1, 0, 0, 0);
+		}
 
 		vTaskDelay(10);
 	}
@@ -343,6 +362,8 @@ void battery_task(void *argument)
 		{
 			val = HAL_ADC_GetValue(&hadc1);
 			//sgw.battery = val * 4096;
+
+			mavlink_msg_battery_status_send(MAVLINK_COMM_0, 0, 0, 0, 0, NULL, 0, 100, 0, val, 100, 0);
 		}
 
 		vTaskDelay(10);
@@ -429,19 +450,19 @@ void monitor_task(void *argument)
 
 	for (;;)
 	{
-//		shell->write((uint8_t *)"Tasks\t\tStatus\tPriority\tStack(4)\tNum\n\n");
-//		vTaskList((char *)runtime_info);
-//		shell->write(runtime_info);
+		//		shell->write((uint8_t *)"Tasks\t\tStatus\tPriority\tStack(4)\tNum\n\n");
+		//		vTaskList((char *)runtime_info);
+		//		shell->write(runtime_info);
 
-//		for (size_t i = 0; i < 5; i++)
-//			shell->write((uint8_t *)"\n");
+		//		for (size_t i = 0; i < 5; i++)
+		//			shell->write((uint8_t *)"\n");
 
-//		shell->write((uint8_t *)"Tasks\t\tCPU(us)\t\tCPU(\%)\n\n");
-//		vTaskGetRunTimeStats((char *)runtime_info);
-//		shell->write((uint8_t *)runtime_info);
+		//		shell->write((uint8_t *)"Tasks\t\tCPU(us)\t\tCPU(\%)\n\n");
+		//		vTaskGetRunTimeStats((char *)runtime_info);
+		//		shell->write((uint8_t *)runtime_info);
 
-//		for (size_t i = 0; i < 5; i++)
-//			shell->write((uint8_t *)"\n");
+		//		for (size_t i = 0; i < 5; i++)
+		//			shell->write((uint8_t *)"\n");
 
 		vTaskDelay(1000);
 	}
@@ -456,12 +477,6 @@ void periperal_task(void *argument)
 
 	for (;;)
 	{
-		mavlink_msg_raw_imu_send(MAVLINK_COMM_0, (uint64_t)tick_abs * 1000,
-								 sensor.accel[0], sensor.accel[1], sensor.accel[2],
-								 sensor.gyro[0], sensor.gyro[1], sensor.gyro[2],
-								 sensor.magnet[0], sensor.magnet[1], sensor.magnet[2],
-								 0,
-								 sensor.temp);
 
 		// led_red.handle();
 

@@ -30,7 +30,7 @@ public:
 
 	uint32_t read(uint8_t *buffer, uint32_t size);
 	void write(uint8_t *buffer, uint32_t size);
-	void write(uint8_t *s);
+	void write(const char *s);
 
 	void read_cb(uint8_t *buffer, uint32_t size);
 	void write_cb(bool ok);

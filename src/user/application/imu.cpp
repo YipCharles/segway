@@ -82,6 +82,8 @@ void IMU::sample(void)
 		sensor_read_it();
 }
 
+extern volatile int DebugCnt;
+
 bool IMU::handle(void)
 {
 	mpu_t item;
@@ -198,6 +200,8 @@ bool IMU::handle(void)
 
 			// TODO: un-neccessary
 			ready = true;
+
+			DebugCnt++;
 		}
 	}
 
@@ -360,6 +364,26 @@ bool IMU::gyroGet(float g[3])
 		return false;
 
 	memcpy(g, gyro, sizeof(gyro));
+
+	return true;
+}
+
+bool IMU::accelGet(float a[3])
+{
+	if (!ready)
+		return false;
+
+	memcpy(a, accel, sizeof(accel));
+
+	return true;
+}
+
+bool IMU::magGet(float m[3])
+{
+	if (!ready)
+		return false;
+
+	memcpy(m, mag, sizeof(mag));
 
 	return true;
 }

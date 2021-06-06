@@ -27,8 +27,8 @@ void platform_init(void)
 
 	sonic.init(serial_2);
 
-	motor[0].init(&htim3, TIM_CHANNEL_1, TIM_CHANNEL_2, false);
-	motor[1].init(&htim4, TIM_CHANNEL_1, TIM_CHANNEL_2, true);
+	motor[0].init(&htim3, TIM_CHANNEL_1, TIM_CHANNEL_2, true);
+	motor[1].init(&htim4, TIM_CHANNEL_1, TIM_CHANNEL_2, false);
 
 	encoder[0].init(0.01, 500);
 	encoder[1].init(0.01, 500);

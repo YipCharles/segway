@@ -12,6 +12,8 @@ private:
 	uint8_t status = 0;
 	uint16_t data = 0;
 	uint8_t sum = 0;
+	
+	uint16_t distance = 0;
 
 	bool parse(uint8_t c, uint16_t *d);
 	bool ready;

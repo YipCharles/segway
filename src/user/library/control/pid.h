@@ -11,14 +11,13 @@ private:
 	float _ki;
 	float _kd;
 
-	float _out_factor;
-	float _acc_limit;
+	float _ierror_limit;
 	float _out_limit;
 
 	float _error;
 	float _error_pre;
-	float _error_acc;
-	float _error_diff;
+	float _ierror;
+	float _derror;
 	float _dt;
 	float _output;
 
@@ -27,14 +26,14 @@ private:
 public:
 	PID(){};
 
-	void init(float kp,
-			  float ki,
-			  float kd,
-			  float out_factor,
-			  float cutoff_freq,
-			  float acc_limit,
-			  float out_limit,
-			  float dt);
+	void init(
+		float kp,
+		float ki,
+		float kd,
+		float ierror_limit,
+		float out_limit,
+		float d_cutoff,
+		uint32_t run_rate);
 
 	float apply(float error);
 	void kpSet(float p);

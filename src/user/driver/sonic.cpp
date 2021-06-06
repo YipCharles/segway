@@ -19,7 +19,6 @@ bool Sonic::read(uint16_t &d)
 	if (!ready)
 		return false;
 
-	uint16_t distance = 0;
 	uint8_t buffer[32];
 	uint16_t size;
 
@@ -39,7 +38,7 @@ bool Sonic::read(uint16_t &d)
 
 bool Sonic::parse(uint8_t c, uint16_t *d)
 {
-	bool res;
+	bool res = false;
 
 	switch (status)
 	{
