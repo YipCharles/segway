@@ -19,17 +19,16 @@ static DEV_usb *mavlink = NULL;
 IMU imu;
 SemaphoreHandle_t sample_sync = NULL;
 static float gyro[3], accel[3], mag[3];
+static float target_gyro[3];
 static float attitude[3];
-static float target_attitude[3];
-volatile static float target_speed;
-static float target_speed_angle;
-static float attitude_ctrl_output[3];
-volatile static float enc_speed_ctrl_output;
+volatile static float target_attitude[3];
+volatile static int32_t distance;
+volatile static int32_t target_distance;
+static int32_t speed;
+static int32_t target_speed;
 PID pid_gyro[3];
 PID pid_attitude[3];
-PID pid_enc_speed;
-float cur_speed, cur_angle_speed;
-static bool is_stable;
+PID pid_enc_distance;
 volatile int DebugCnt;
 
 extern "C"
@@ -129,7 +128,7 @@ void imu_sample_task(void *argument)
 			// push sensor raw data to queue
 			imu.sample();
 
-			// DebugCnt++;
+			DebugCnt++;
 		}
 	}
 }
@@ -163,7 +162,7 @@ pwm_t pwm_1, pwm_2;
 static void pwm_constrain(pwm_t *pwm)
 {
 	pwm->pwm_out = constrain_float(pwm->pwm_out,
-								   pwm->last_pwm_out - 8, pwm->last_pwm_out + 8);
+								   pwm->last_pwm_out - 50, pwm->last_pwm_out + 50);
 	pwm->last_pwm_out = pwm->pwm_out;
 }
 
@@ -173,16 +172,14 @@ void gyro_control_task(void *argument)
 
 	tick_abs = xTaskGetTickCount();
 
-	pid_gyro[PITCH].init(3, 0, 0,
-						 0,
-						 300,
-						 30,
+	pid_gyro[PITCH].init(3.5, 0, 0,
+						 0, 1000,
+						 10,
 						 1000);
 
-	pid_gyro[YAW].init(3, 0, 0,
-					   0,
-					   300,
-					   30,
+	pid_gyro[YAW].init(2, 0, 0,
+					   0, 1000,
+					   10,
 					   1000);
 
 	for (;;)
@@ -197,10 +194,10 @@ void gyro_control_task(void *argument)
 			imu.accelGet(accel);
 			imu.magGet(mag);
 
-			error = attitude_ctrl_output[PITCH] - gyro[PITCH];
+			error = target_gyro[PITCH] - gyro[PITCH];
 			output_pitch = pid_gyro[PITCH].apply(error);
 
-			error = 0 - gyro[YAW];
+			error = target_gyro[YAW] - gyro[YAW];
 			output_yaw = pid_gyro[YAW].apply(error);
 
 			pwm_1.pwm_out = output_pitch + output_yaw;
@@ -236,16 +233,14 @@ void attitude_control_task(void *argument)
 
 	tick_abs = xTaskGetTickCount();
 
-	pid_attitude[PITCH].init(3, 0, 0,
-							 0,
-							 50,
+	pid_attitude[PITCH].init(18, 0.5, 0,
+							 30, 50,
 							 30,
-							 1000);
-	pid_attitude[YAW].init(3, 0, 0,
-						   0,
-						   10,
+							 500);
+	pid_attitude[YAW].init(5, 0.5, 0,
+						   30, 50,
 						   30,
-						   1000);
+						   500);
 
 	for (;;)
 	{
@@ -258,32 +253,31 @@ void attitude_control_task(void *argument)
 			imu.attitudeGet(attitude);
 
 			error = target_attitude[PITCH] - attitude[PITCH];
-			attitude_ctrl_output[PITCH] = pid_attitude[PITCH].apply(error);
+			target_gyro[PITCH] = pid_attitude[PITCH].apply(error);
 
 			error = target_attitude[YAW] - attitude[YAW];
-			attitude_ctrl_output[YAW] = pid_attitude[YAW].apply(error);
+			target_gyro[YAW] = pid_attitude[YAW].apply(error);
 
 			mavlink_msg_attitude_send(MAVLINK_COMM_0, (uint64_t)tick_abs * 1000,
 									  attitude[ROLL], attitude[PITCH], attitude[YAW],
 									  0, 0, 0);
 
-			vTaskDelayUntil(&tick_abs, 5);
+			vTaskDelayUntil(&tick_abs, 2);
 		}
 	}
 }
-
-int32_t speed[2];
 
 void enc_control_task(void *argument)
 {
 	TickType_t tick_abs;
 	volatile static float error;
 	float rate[2];
+	int32_t d[2];
 
-	pid_enc_speed.init(2, 0, 0,
-					   0, 10,
-					   30,
-					   1000);
+	pid_enc_distance.init(10, 0, 0,
+						  1, 1,
+						  30,
+						  200);
 
 	tick_abs = xTaskGetTickCount();
 
@@ -291,23 +285,20 @@ void enc_control_task(void *argument)
 	{
 
 		// TODO: convert the rate of wheal
-		rate[0] = target_speed - target_speed_angle;
-		rate[1] = target_speed + target_speed_angle;
+		//		rate[0] = target_speed - target_speed_angle;
+		//		rate[1] = target_speed + target_speed_angle;
 
 		for (size_t i = 0; i < 2; i++)
 		{
 			encoder[i].handle();
 
-			speed[i] = encoder[i].speedGet();
+			d[i] = encoder[i].distanceGet();
 		}
 
-		cur_speed = (speed[0] + speed[1]) / 2;
-		cur_angle_speed = (160);
+		distance = (d[0] + d[1]) / 2;
 
-		error = target_speed - cur_speed;
-		enc_speed_ctrl_output = -pid_enc_speed.apply(error);
-
-		target_attitude[PITCH] = enc_speed_ctrl_output * 1.001f;
+		error = target_distance - distance;
+		target_attitude[PITCH] = pid_enc_distance.apply(-error);
 
 		vTaskDelayUntil(&tick_abs, 5);
 

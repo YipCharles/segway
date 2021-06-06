@@ -30,7 +30,7 @@ bool IMU::init(void)
 	// sensor_read = mpu.read;
 
 	exist = mpu.isready();
-	sample_rate = 1000;
+	sample_rate = 2000;
 
 	// memcpy(&conf, addr, sizeof(imu_sensor_conf_t));
 
@@ -53,7 +53,7 @@ bool IMU::init(void)
 	for (uint32_t i = 0; i < 3; i++)
 	{
 		gyro_lpf_handle[i].set_cutoff_frequency(sample_rate, 20);
-		accel_lpf_handle[i].set_cutoff_frequency(sample_rate, 20);
+		accel_lpf_handle[i].set_cutoff_frequency(sample_rate, 3);
 	}
 
 	imu_sample_queue = xQueueCreate(32, sizeof(mpu_t));

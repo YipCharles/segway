@@ -56,11 +56,16 @@ float PID::apply(float error)
 	}
 	i = _ki * _ierror;
 
-	d = _kd * (_error - _error_pre) / _dt;
+	d = (_error - _error_pre) / _dt;
 
 	if (lpf.get_cutoff_freq())
 		d = lpf.apply(d);
-
+	
+	// debug
+	_derror = d;
+	
+	d = _kd * _derror;
+	
 	out = (p + i + d);
 
 	if (out > _out_limit)
